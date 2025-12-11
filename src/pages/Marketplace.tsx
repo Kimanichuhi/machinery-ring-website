@@ -1,4 +1,4 @@
- import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,11 +15,11 @@ const products = [
     unit: 'per kg',
     location: 'Olkalou',
     rating: 4.8,
-    stock: 600 ,
+    stock: 600,
     image: '/maize.jpg',
     tags: ['hybrid', 'drought-resistant']
   },
-{
+  {
     id: 2,
     name: 'Beans Seed (Nyota)',
     category: 'Seeds',
@@ -31,7 +31,7 @@ const products = [
     image: '/placeholder.svg',
     tags: ['Disease Resistant', 'Immune']
   },
- {
+  {
     id: 3,
     name: 'Potato (Markies)',
     category: 'Seeds',
@@ -43,7 +43,7 @@ const products = [
     image: '/placeholder.svg',
     tags: ['Disease Resistant', 'Productive']
   },
- {
+  {
     id: 4,
     name: 'Potato (Shangi)',
     category: 'Seeds',
@@ -55,7 +55,7 @@ const products = [
     image: '/placeholder.svg',
     tags: ['Disease Resistant', 'Productive']
   },
- {
+  {
     id: 5,
     name: 'Potato (Wanjiku)',
     category: 'Seeds',
@@ -67,7 +67,7 @@ const products = [
     image: '/placeholder.svg',
     tags: ['Disease Resistant', 'Productive']
   },
- {
+  {
     id: 6,
     name: 'Potato (Unica)',
     category: 'Seeds',
@@ -91,7 +91,7 @@ const products = [
     image: '/placeholder.svg',
     tags: ['organic', 'Friendly']
   },
-{
+  {
     id: 8,
     name: 'DAP',
     category: 'Fertilizer',
@@ -103,7 +103,7 @@ const products = [
     image: '/placeholder.svg',
     tags: ['organic', 'On Offer']
   },
-{
+  {
     id: 9,
     name: 'CAN',
     category: 'Fertilizer',
@@ -115,7 +115,7 @@ const products = [
     image: '/placeholder.svg',
     tags: ['organic', 'Effective']
   },
-{
+  {
     id: 10,
     name: 'Urea',
     category: 'Fertilizer',
@@ -127,7 +127,7 @@ const products = [
     image: '/placeholder.svg',
     tags: ['organic', 'Effective']
   },
-{
+  {
     id: 11,
     name: 'Foliar',
     category: 'Fertilizer',
@@ -199,7 +199,7 @@ const products = [
     image: '/placeholder.svg',
     tags: ['efficient', 'Productive']
   },
-   {
+  {
     id: 17,
     name: 'Herbicides',
     category: 'Agrochemicals',
@@ -211,8 +211,8 @@ const products = [
     image: '/placeholder.svg',
     tags: ['efficient', 'Productive']
   },
-   {
-    id: 11,
+  {
+    id: 18,
     name: 'Insecticides',
     category: 'Agrochemicals',
     price: 500,
@@ -225,7 +225,7 @@ const products = [
   }
 ];
 
-const categories = ['All', 'Seeds', 'Fertilizer', 'Tools', 'Produce', 'Agrochemical', 'Animal Feeds'];
+const categories = ['All', 'Seeds', 'Fertilizer', 'Tools', 'Produce', 'Agrochemicals', 'Animal Feeds'];
 
 const Marketplace = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -243,23 +243,23 @@ const Marketplace = () => {
     <div className="bg-background min-h-screen">
       {/* Header */}
       <div className="bg-white border-b">
-        <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 lg:px-8">
           <div className="text-center">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
               Agricultural Marketplace
             </h1>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="mt-3 sm:mt-4 text-sm sm:text-lg text-muted-foreground px-4">
               Discover quality seeds, tools, fertilizers, and fresh produce from verified suppliers
             </p>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 lg:px-8">
         {/* Filters */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-1 items-center space-x-4">
-            <div className="relative flex-1 max-w-md">
+        <div className="mb-6 sm:mb-8 flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search products..."
@@ -268,41 +268,43 @@ const Marketplace = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-3">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="featured">Featured</SelectItem>
+                  <SelectItem value="price-low">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="rating">Highest Rated</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="featured">Featured</SelectItem>
-              <SelectItem value="price-low">Price: Low to High</SelectItem>
-              <SelectItem value="price-high">Price: High to Low</SelectItem>
-              <SelectItem value="rating">Highest Rated</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
         {/* Results count */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <p className="text-sm text-muted-foreground">
             Showing {filteredProducts.length} of {products.length} products
           </p>
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProducts.map((product) => (
             <Card key={product.id} className="product-card group">
               <div className="aspect-square overflow-hidden rounded-t-xl bg-muted">
@@ -312,26 +314,26 @@ const Marketplace = () => {
                   className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4">
                 <div className="flex items-start justify-between">
-                  <div>
+                  <div className="flex-1">
                     <Badge variant="secondary" className="mb-2 text-xs">
                       {product.category}
                     </Badge>
-                    <CardTitle className="text-base font-semibold leading-tight">
+                    <CardTitle className="text-sm sm:text-base font-semibold leading-tight line-clamp-2">
                       {product.name}
                     </CardTitle>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                <div className="flex items-center space-x-1 text-xs sm:text-sm text-muted-foreground">
                   <MapPin className="h-3 w-3" />
                   <span>{product.location}</span>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex items-center justify-between mb-3">
+              <CardContent className="pt-0 p-3 sm:p-4 sm:pt-0">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
                   <div>
-                    <p className="text-lg font-bold text-primary">
+                    <p className="text-base sm:text-lg font-bold text-primary">
                       KES {product.price.toLocaleString()}
                     </p>
                     <p className="text-xs text-muted-foreground">{product.unit}</p>
@@ -341,18 +343,18 @@ const Marketplace = () => {
                     <span className="text-xs font-medium">{product.rating}</span>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-1 mb-3">
+                <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
                   {product.tags.slice(0, 2).map((tag) => (
                     <Badge key={tag} variant="outline" className="text-xs">
                       {tag}
                     </Badge>
                   ))}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs sm:text-sm text-muted-foreground">
                     {product.stock} in stock
                   </span>
-                  <Button size="sm" variant="hero">
+                  <Button size="sm" variant="hero" className="text-xs sm:text-sm">
                     <ShoppingCart className="h-3 w-3 mr-1" />
                     Add to Cart
                   </Button>
@@ -363,7 +365,7 @@ const Marketplace = () => {
         </div>
 
         {/* Load more */}
-        <div className="mt-12 text-center">
+        <div className="mt-8 sm:mt-12 text-center">
           <Button variant="outline" size="lg">
             Load More Products
           </Button>
