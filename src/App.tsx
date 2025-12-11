@@ -10,8 +10,8 @@ import { Toaster } from "@/components/ui/toaster";
 import Index from "./pages/Index";
 import Marketplace from "./pages/Marketplace";
 import Services from "./pages/Services";
+import Gallery from "./pages/Gallery";
 import Resources from "./pages/Resources";
-import Blog from "./pages/Blog";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -31,8 +31,8 @@ const App: React.FC = () => (
               <Route path="/" element={<Index />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/services" element={<Services />} />
+              <Route path="/gallery" element={<Gallery />} />
               <Route path="/resources" element={<Resources />} />
-              <Route path="/blog" element={<Blog />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="*" element={<NotFound />} />

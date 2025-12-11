@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, BookOpen, Clock, ChevronRight } from 'lucide-react';
+import { Download, BookOpen, Clock, ChevronRight, AlertCircle } from 'lucide-react';
 
 const guides = [
   {
@@ -13,7 +13,7 @@ const guides = [
     description: 'From land preparation to harvesting, learn everything about successful maize cultivation.',
     category: 'Crop Guides',
     readTime: '15 min read',
-    downloadable: true,
+    downloadable: false,
     popular: true
   },
   {
@@ -22,7 +22,7 @@ const guides = [
     description: 'Sustainable farming methods to improve soil health and crop quality naturally.',
     category: 'Sustainable Farming',
     readTime: '12 min read',
-    downloadable: true,
+    downloadable: false,
     popular: false
   },
   {
@@ -31,7 +31,7 @@ const guides = [
     description: 'Efficient irrigation methods and water conservation strategies for your farm.',
     category: 'Water Management',
     readTime: '10 min read',
-    downloadable: true,
+    downloadable: false,
     popular: true
   },
   {
@@ -40,7 +40,7 @@ const guides = [
     description: 'Identify, prevent, and treat common agricultural pests and diseases.',
     category: 'Plant Health',
     readTime: '18 min read',
-    downloadable: true,
+    downloadable: false,
     popular: false
   }
 ];
@@ -112,12 +112,12 @@ const Resources = () => {
     <div className="bg-background min-h-screen">
       {/* Header */}
       <div className="bg-white border-b">
-        <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
               Farmer Resources
             </h1>
-            <p className="mt-6 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
+            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-8 text-muted-foreground max-w-2xl mx-auto px-4">
               Access comprehensive guides, seasonal tips, and expert knowledge to improve 
               your farming practices and increase productivity.
             </p>
@@ -125,23 +125,23 @@ const Resources = () => {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-16 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="guides">Farming Guides</TabsTrigger>
-            <TabsTrigger value="tips">Seasonal Tips</TabsTrigger>
-            <TabsTrigger value="faq">FAQ</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="guides" className="text-xs sm:text-sm">Farming Guides</TabsTrigger>
+            <TabsTrigger value="tips" className="text-xs sm:text-sm">Seasonal Tips</TabsTrigger>
+            <TabsTrigger value="faq" className="text-xs sm:text-sm">FAQ</TabsTrigger>
           </TabsList>
 
           {/* Farming Guides */}
-          <TabsContent value="guides" className="mt-8">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <TabsContent value="guides" className="mt-6 sm:mt-8">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
               {guides.map((guide) => (
                 <Card key={guide.id} className="product-card">
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center space-x-2 mb-2">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
                           <Badge variant="secondary">{guide.category}</Badge>
                           {guide.popular && (
                             <Badge variant="default" className="bg-accent text-accent-foreground">
@@ -149,12 +149,12 @@ const Resources = () => {
                             </Badge>
                           )}
                         </div>
-                        <CardTitle className="text-xl font-bold">
+                        <CardTitle className="text-lg sm:text-xl font-bold">
                           {guide.title}
                         </CardTitle>
-                        <p className="mt-2 text-muted-foreground">{guide.description}</p>
+                        <p className="mt-2 text-sm sm:text-base text-muted-foreground">{guide.description}</p>
                       </div>
-                      <BookOpen className="h-6 w-6 text-muted-foreground flex-shrink-0" />
+                      <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground flex-shrink-0 ml-2" />
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                       <div className="flex items-center space-x-1">
@@ -164,17 +164,18 @@ const Resources = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex space-x-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <Button className="flex-1" variant="hero">
                         Read Guide
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
-                      {guide.downloadable && (
-                        <Button variant="outline">
-                          <Download className="h-4 w-4 mr-2" />
-                          Download PDF
-                        </Button>
-                      )}
+                      <Button variant="outline" disabled className="flex-1 sm:flex-none">
+                        <Download className="h-4 w-4 mr-2" />
+                        <span className="flex items-center gap-1">
+                          Coming Soon
+                          <AlertCircle className="h-3 w-3" />
+                        </span>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -183,15 +184,15 @@ const Resources = () => {
           </TabsContent>
 
           {/* Seasonal Tips */}
-          <TabsContent value="tips" className="mt-8">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <TabsContent value="tips" className="mt-6 sm:mt-8">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
               {seasonalTips.map((seasonal, index) => (
                 <Card key={index} className="product-card">
                   <CardHeader>
                     <Badge variant="outline" className="w-fit mb-2">
                       {seasonal.season}
                     </Badge>
-                    <CardTitle className="text-lg font-bold">
+                    <CardTitle className="text-base sm:text-lg font-bold">
                       {seasonal.title}
                     </CardTitle>
                   </CardHeader>
@@ -211,15 +212,15 @@ const Resources = () => {
           </TabsContent>
 
           {/* FAQ */}
-          <TabsContent value="faq" className="mt-8">
+          <TabsContent value="faq" className="mt-6 sm:mt-8">
             <div className="max-w-4xl mx-auto">
               <Accordion type="single" collapsible className="w-full">
                 {faqs.map((faq, index) => (
                   <AccordionItem key={index} value={`item-${index}`}>
-                    <AccordionTrigger className="text-left">
+                    <AccordionTrigger className="text-left text-sm sm:text-base">
                       {faq.question}
                     </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground">
+                    <AccordionContent className="text-muted-foreground text-sm sm:text-base">
                       {faq.answer}
                     </AccordionContent>
                   </AccordionItem>
@@ -231,20 +232,21 @@ const Resources = () => {
       </div>
 
       {/* Newsletter CTA */}
-      <div className="bg-muted/50 py-16">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="bg-muted/50 py-12 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
               Stay Updated with Latest Farming Tips
             </h2>
-            <p className="mt-6 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
+            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
               Subscribe to our newsletter for seasonal farming advice, new resource updates, 
               and expert insights delivered to your inbox.
             </p>
-            <div className="mt-10">
-              <Button size="lg" variant="hero">
-                Subscribe to Newsletter
-              </Button>
+            <div className="mt-8 sm:mt-10">
+              <Badge variant="secondary" className="text-sm px-4 py-2">
+                <AlertCircle className="h-4 w-4 mr-2 inline" />
+                Newsletter Coming Soon
+              </Badge>
             </div>
           </div>
         </div>

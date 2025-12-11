@@ -37,10 +37,10 @@ const TestimonialsSlider = () => {
   const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
-    if (isHovering) return; // stop sliding when hovering
+    if (isHovering) return;
     const interval = setInterval(() => {
-      setIndex(prev => (prev + 2) % testimonials.length);
-    }, 4000); // change every 4 seconds
+      setIndex(prev => (prev + 1) % testimonials.length);
+    }, 4000);
     return () => clearInterval(interval);
   }, [isHovering]);
 
@@ -51,27 +51,27 @@ const TestimonialsSlider = () => {
 
   return (
     <section
-      className="bg-muted/50 py-24"
+      className="bg-muted/50 py-16 sm:py-24"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center mb-16">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center mb-10 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
             Trusted by Farmers Across Kenya
           </h2>
-          <p className="mt-6 text-lg leading-8 text-muted-foreground">
+          <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground">
             See how Machinery Ring is helping farmers achieve better yields and sustainable growth.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 transition-transform duration-700 ease-in-out">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 transition-transform duration-700 ease-in-out">
           {currentTestimonials.map((testimonial, i) => (
             <Card key={i} className="product-card h-full shadow-md">
-              <CardContent className="pt-6">
-                <blockquote className="text-lg text-muted-foreground italic">
-                  “{testimonial.content}”
+              <CardContent className="pt-6 p-4 sm:p-6">
+                <blockquote className="text-base sm:text-lg text-muted-foreground italic">
+                  "{testimonial.content}"
                 </blockquote>
-                <div className="mt-6">
+                <div className="mt-4 sm:mt-6">
                   <div className="font-semibold text-foreground">{testimonial.author}</div>
                   <div className="text-sm text-muted-foreground">{testimonial.role}</div>
                   <div className="text-sm text-primary">{testimonial.location}</div>
@@ -95,23 +95,23 @@ const Index = () => {
           <img src={heroImage} alt="Agricultural landscape in Kenya" className="h-full w-full object-cover object-center" />
           <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/60" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-40">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-24 lg:px-8 lg:py-40">
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl animate-fade-in">
+            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight text-white animate-fade-in">
               Smart Farming, Better Yields
             </h1>
-            <p className="mt-6 text-lg leading-8 text-white/90 animate-slide-up">
+            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-white/90 animate-slide-up">
               Connect with quality agricultural inputs, expert services, and a thriving community of farmers across Kenya. Transform your farming with Machinery Ring.
             </p>
-            <div className="mt-10 flex items-center gap-x-6 animate-scale-in">
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 animate-scale-in">
               <Link to="/marketplace">
-                <Button size="lg" variant="hero">
+                <Button size="lg" variant="hero" className="w-full sm:w-auto">
                   Explore Marketplace
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/services">
-                <Button variant="hero-outline" size="lg" className="border-white text-white">
+                <Button variant="hero-outline" size="lg" className="w-full sm:w-auto border-white text-white">
                   Our Services
                 </Button>
               </Link>
@@ -121,16 +121,16 @@ const Index = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="bg-white py-16">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="bg-white py-12 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-6 sm:gap-8 lg:grid-cols-4">
             {stats.map((stat) => (
               <div key={stat.name} className="text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-hero">
-                  <stat.icon className="h-6 w-6 text-white" />
+                <div className="mx-auto flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-primary">
+                  <stat.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <p className="mt-4 text-3xl font-bold tracking-tight text-primary">{stat.value}</p>
-                <p className="text-sm leading-6 text-muted-foreground">{stat.name}</p>
+                <p className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-bold tracking-tight text-primary">{stat.value}</p>
+                <p className="text-xs sm:text-sm leading-6 text-muted-foreground">{stat.name}</p>
               </div>
             ))}
           </div>
@@ -138,25 +138,25 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-muted/50">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="py-16 sm:py-24 bg-muted/50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
               Everything You Need for Successful Farming
             </h2>
-            <p className="mt-6 text-lg leading-8 text-muted-foreground">
+            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground">
               From premium inputs to expert guidance, we provide comprehensive solutions for modern agricultural practices.
             </p>
           </div>
-          <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-2">
+          <div className="mx-auto mt-12 sm:mt-16 lg:mt-24 max-w-2xl lg:max-w-none">
+            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 sm:gap-y-16 lg:max-w-none lg:grid-cols-2">
               {features.map((feature) => (
                 <div key={feature.name} className="flex flex-col">
                   <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-foreground">
                     <feature.icon className={`h-5 w-5 flex-none ${feature.color}`} />
                     {feature.name}
                   </dt>
-                  <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-muted-foreground">
+                  <dd className="mt-3 sm:mt-4 flex flex-auto flex-col text-sm sm:text-base leading-7 text-muted-foreground">
                     <p className="flex-auto">{feature.description}</p>
                   </dd>
                 </div>
@@ -167,19 +167,19 @@ const Index = () => {
       </section>
 
       {/* Products Showcase */}
-      <section className="py-24 bg-white">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-2 lg:items-center">
+      <section className="py-16 sm:py-24 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-12 sm:gap-y-16 lg:mx-0 lg:max-w-none lg:grid-cols-2 lg:items-center">
             <div className="lg:pr-8">
               <div className="lg:max-w-lg">
                 <Badge variant="secondary" className="mb-4">Featured Products</Badge>
-                <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
                   Premium Agricultural Products
                 </h2>
-                <p className="mt-6 text-lg leading-8 text-muted-foreground">
+                <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground">
                   Discover our carefully curated selection of seeds, fertilizers, tools, and fresh produce from verified suppliers across Kenya.
                 </p>
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <Link to="/marketplace">
                     <Button variant="hero">
                       Browse All Products
@@ -204,16 +204,16 @@ const Index = () => {
       <TestimonialsSlider />
 
       {/* CTA Section */}
-      <section className="bg-primary py-16">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="bg-primary py-12 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">
               Ready to Transform Your Farming?
             </h2>
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-primary-foreground/90">
+            <p className="mx-auto mt-4 sm:mt-6 max-w-xl text-base sm:text-lg leading-7 sm:leading-8 text-primary-foreground/90">
               Join thousands of farmers who are already using Machinery Ring to improve their yields and grow their agricultural business.
             </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/marketplace">
                 <Button size="lg" variant="secondary">
                   Start Shopping
