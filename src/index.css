@@ -125,7 +125,7 @@
 @layer components {
   /* Hero Button Variants */
   .btn-hero {
-    @apply bg-gradient-to-r from-primary to-primary-hover text-primary-foreground font-semibold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
+    @apply bg-primary text-primary-foreground font-semibold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl hover:bg-primary/90 transform hover:scale-105 transition-all duration-300;
   }
   
   .btn-hero-outline {
