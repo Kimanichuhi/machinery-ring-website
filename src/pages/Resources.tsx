@@ -1,0 +1,256 @@
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Download, BookOpen, Clock, ChevronRight } from 'lucide-react';
+
+const guides = [
+  {
+    id: 1,
+    title: 'Complete Guide to Maize Farming',
+    description: 'From land preparation to harvesting, learn everything about successful maize cultivation.',
+    category: 'Crop Guides',
+    readTime: '15 min read',
+    downloadable: true,
+    popular: true
+  },
+  {
+    id: 2,
+    title: 'Organic Farming Practices',
+    description: 'Sustainable farming methods to improve soil health and crop quality naturally.',
+    category: 'Sustainable Farming',
+    readTime: '12 min read',
+    downloadable: true,
+    popular: false
+  },
+  {
+    id: 3,
+    title: 'Water Management Techniques',
+    description: 'Efficient irrigation methods and water conservation strategies for your farm.',
+    category: 'Water Management',
+    readTime: '10 min read',
+    downloadable: true,
+    popular: true
+  },
+  {
+    id: 4,
+    title: 'Pest and Disease Control',
+    description: 'Identify, prevent, and treat common agricultural pests and diseases.',
+    category: 'Plant Health',
+    readTime: '18 min read',
+    downloadable: true,
+    popular: false
+  }
+];
+
+const seasonalTips = [
+  {
+    season: 'Dry Season',
+    title: 'Preparing for the Dry Season',
+    tips: [
+      'Install drip irrigation systems',
+      'Mulch around plants to retain moisture',
+      'Plant drought-resistant crop varieties',
+      'Harvest rainwater during the wet season'
+    ]
+  },
+  {
+    season: 'Rainy Season',
+    title: 'Making the Most of Rains',
+    tips: [
+      'Ensure proper drainage to prevent waterlogging',
+      'Plant water-loving crops like rice and vegetables',
+      'Apply organic fertilizers for better nutrient absorption',
+      'Monitor for fungal diseases in humid conditions'
+    ]
+  },
+  {
+    season: 'Planting Season',
+    title: 'Optimal Planting Practices',
+    tips: [
+      'Test soil pH and nutrient levels',
+      'Use certified seeds from reputable suppliers',
+      'Follow proper spacing recommendations',
+      'Apply pre-planting fertilizers appropriately'
+    ]
+  }
+];
+
+const faqs = [
+  {
+    question: "What is the best time to plant maize in Kenya?",
+    answer: "The best time to plant maize in Kenya is at the beginning of the long rains (March-May) and short rains (October-December). However, timing can vary by region, so consult local agricultural extension officers for specific guidance in your area."
+  },
+  {
+    question: "How do I test my soil's pH level?",
+    answer: "You can test soil pH using digital pH meters, pH test strips, or by sending samples to agricultural laboratories. For accurate results, we recommend professional soil testing services which also provide nutrient analysis and fertilizer recommendations."
+  },
+  {
+    question: "What are the signs of nutrient deficiency in crops?",
+    answer: "Common signs include yellowing leaves (nitrogen deficiency), purple-tinged leaves (phosphorus deficiency), brown leaf edges (potassium deficiency), and stunted growth. Different crops show different symptoms, so proper identification is important for treatment."
+  },
+  {
+    question: "How often should I water my crops?",
+    answer: "Watering frequency depends on crop type, soil type, weather conditions, and growth stage. Generally, most crops need water when the top 2-3 inches of soil are dry. Drip irrigation systems can help maintain consistent moisture levels."
+  },
+  {
+    question: "What is integrated pest management (IPM)?",
+    answer: "IPM is a holistic approach to pest control that combines biological, cultural, physical, and chemical methods. It focuses on prevention, monitoring, and using the least toxic methods first, only resorting to pesticides when necessary."
+  },
+  {
+    question: "How can I improve my soil fertility naturally?",
+    answer: "You can improve soil fertility by adding organic matter (compost, manure), practicing crop rotation, using cover crops, applying green manure, and maintaining proper soil pH. These methods enhance soil structure, water retention, and nutrient availability."
+  }
+];
+
+const Resources = () => {
+  const [activeTab, setActiveTab] = useState('guides');
+
+  return (
+    <div className="bg-background min-h-screen">
+      {/* Header */}
+      <div className="bg-white border-b">
+        <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+              Farmer Resources
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
+              Access comprehensive guides, seasonal tips, and expert knowledge to improve 
+              your farming practices and increase productivity.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="guides">Farming Guides</TabsTrigger>
+            <TabsTrigger value="tips">Seasonal Tips</TabsTrigger>
+            <TabsTrigger value="faq">FAQ</TabsTrigger>
+          </TabsList>
+
+          {/* Farming Guides */}
+          <TabsContent value="guides" className="mt-8">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {guides.map((guide) => (
+                <Card key={guide.id} className="product-card">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Badge variant="secondary">{guide.category}</Badge>
+                          {guide.popular && (
+                            <Badge variant="default" className="bg-accent text-accent-foreground">
+                              Popular
+                            </Badge>
+                          )}
+                        </div>
+                        <CardTitle className="text-xl font-bold">
+                          {guide.title}
+                        </CardTitle>
+                        <p className="mt-2 text-muted-foreground">{guide.description}</p>
+                      </div>
+                      <BookOpen className="h-6 w-6 text-muted-foreground flex-shrink-0" />
+                    </div>
+                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{guide.readTime}</span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex space-x-3">
+                      <Button className="flex-1" variant="hero">
+                        Read Guide
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                      {guide.downloadable && (
+                        <Button variant="outline">
+                          <Download className="h-4 w-4 mr-2" />
+                          Download PDF
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Seasonal Tips */}
+          <TabsContent value="tips" className="mt-8">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              {seasonalTips.map((seasonal, index) => (
+                <Card key={index} className="product-card">
+                  <CardHeader>
+                    <Badge variant="outline" className="w-fit mb-2">
+                      {seasonal.season}
+                    </Badge>
+                    <CardTitle className="text-lg font-bold">
+                      {seasonal.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-3">
+                      {seasonal.tips.map((tip, tipIndex) => (
+                        <li key={tipIndex} className="flex items-start space-x-2">
+                          <div className="h-1.5 w-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                          <span className="text-sm text-muted-foreground">{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* FAQ */}
+          <TabsContent value="faq" className="mt-8">
+            <div className="max-w-4xl mx-auto">
+              <Accordion type="single" collapsible className="w-full">
+                {faqs.map((faq, index) => (
+                  <AccordionItem key={index} value={`item-${index}`}>
+                    <AccordionTrigger className="text-left">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Newsletter CTA */}
+      <div className="bg-muted/50 py-16">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Stay Updated with Latest Farming Tips
+            </h2>
+            <p className="mt-6 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
+              Subscribe to our newsletter for seasonal farming advice, new resource updates, 
+              and expert insights delivered to your inbox.
+            </p>
+            <div className="mt-10">
+              <Button size="lg" variant="hero">
+                Subscribe to Newsletter
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Resources;
