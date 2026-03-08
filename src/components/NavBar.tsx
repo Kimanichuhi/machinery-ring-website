@@ -1,9 +1,7 @@
-// src/components/NavBar.tsx
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, ShoppingCart } from "lucide-react";
+import { Menu, X, ShoppingCart } from "lucide-react";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -18,8 +16,24 @@ const navigation = [
 export function NavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => location.pathname === path;
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    if (mobileMenuOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [mobileMenuOpen]);
+
+  // Close on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -35,7 +49,7 @@ export function NavBar() {
               key={item.name}
               to={item.href}
               className={`text-sm font-medium ${
-                isActive(item.href) ? "text-primary" : "text-gray-600 hover:text-primary"
+                isActive(item.href) ? "text-primary" : "text-muted-foreground hover:text-primary"
               }`}
             >
               {item.name}
@@ -49,36 +63,38 @@ export function NavBar() {
           </Button>
         </div>
 
-        {/* Mobile */}
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild className="lg:hidden ml-auto">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setMobileMenuOpen(true)}>
-              <Menu className="h-4 w-4" />
-            </Button>
-          </SheetTrigger>
+        {/* Mobile floating menu */}
+        <div className="relative lg:hidden" ref={menuRef}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </Button>
 
-          <SheetContent side="right" className="w-56 p-4">
-            <div className="flex flex-col space-y-4 pt-2">
-              <div className="flex items-center gap-2 mb-2">
-                <img src="/mrlogo.png" alt="Logo" className="h-8 w-auto object-contain" />
-                <span className="font-semibold text-sm">Machinery Ring</span>
-              </div>
-
-              <nav className="space-y-2">
+          {mobileMenuOpen && (
+            <div className="absolute right-0 top-10 w-44 rounded-lg border bg-background shadow-lg animate-fade-in z-50">
+              <nav className="flex flex-col py-2">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
                     to={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${
+                      isActive(item.href)
+                        ? "text-primary bg-primary/5"
+                        : "text-muted-foreground hover:text-primary hover:bg-muted"
+                    }`}
                   >
                     {item.name}
                   </Link>
                 ))}
               </nav>
             </div>
-          </SheetContent>
-        </Sheet>
+          )}
+        </div>
       </nav>
     </header>
   );
