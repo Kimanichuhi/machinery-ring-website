@@ -57,20 +57,20 @@ export function NavBar() {
             </Button>
           </SheetTrigger>
 
-          <SheetContent side="right" className="w-72">
-            <div className="flex flex-col space-y-6 p-4">
-              <div className="flex items-center gap-3 mb-4">
-                <img src="/mrlogo.png" alt="Logo" className="h-10 w-auto object-contain" />
-                <span className="font-semibold text-lg">Machinery Ring</span>
+          <SheetContent side="right" className="w-56 p-4">
+            <div className="flex flex-col space-y-4 pt-2">
+              <div className="flex items-center gap-2 mb-2">
+                <img src="/mrlogo.png" alt="Logo" className="h-8 w-auto object-contain" />
+                <span className="font-semibold text-sm">Machinery Ring</span>
               </div>
 
-              <nav className="space-y-3">
+              <nav className="space-y-2">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
                     to={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block text-gray-700 font-medium text-lg"
+                    className="block text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
                   >
                     {item.name}
                   </Link>
