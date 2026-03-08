@@ -14,6 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
+      gallery_images: {
+        Row: {
+          alt: string | null
+          created_at: string
+          id: string
+          sort_order: number | null
+          src: string
+        }
+        Insert: {
+          alt?: string | null
+          created_at?: string
+          id?: string
+          sort_order?: number | null
+          src: string
+        }
+        Update: {
+          alt?: string | null
+          created_at?: string
+          id?: string
+          sort_order?: number | null
+          src?: string
+        }
+        Relationships: []
+      }
+      page_content: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          page_slug: string
+          section_key: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          page_slug: string
+          section_key: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          page_slug?: string
+          section_key?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          location: string | null
+          name: string
+          price: number
+          rating: number | null
+          stock: number | null
+          tags: string[] | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          location?: string | null
+          name: string
+          price?: number
+          rating?: number | null
+          stock?: number | null
+          tags?: string[] | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          location?: string | null
+          name?: string
+          price?: number
+          rating?: number | null
+          stock?: number | null
+          tags?: string[] | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -38,6 +143,51 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          bookings: string | null
+          category: string | null
+          created_at: string
+          description: string | null
+          duration: string | null
+          features: string[] | null
+          id: string
+          name: string
+          price: string | null
+          rating: number | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          bookings?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration?: string | null
+          features?: string[] | null
+          id?: string
+          name: string
+          price?: string | null
+          rating?: number | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bookings?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration?: string | null
+          features?: string[] | null
+          id?: string
+          name?: string
+          price?: string | null
+          rating?: number | null
+          sort_order?: number | null
+          updated_at?: string
         }
         Relationships: []
       }
