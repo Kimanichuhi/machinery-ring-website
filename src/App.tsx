@@ -1,4 +1,3 @@
-// src/App.tsx
 import React from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,8 @@ import Resources from "./pages/Resources";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import AdminLogin from "./pages/AdminLogin";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -24,22 +25,31 @@ const App: React.FC = () => (
       <Sonner />
 
       <BrowserRouter>
-        <div className="min-h-screen flex flex-col">
-          <NavBar />
-          <main className="flex-1">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
+        <Routes>
+          {/* Admin routes - no NavBar/Footer */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<Admin />} />
+          
+          {/* Public routes */}
+          <Route path="*" element={
+            <div className="min-h-screen flex flex-col">
+              <NavBar />
+              <main className="flex-1">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/marketplace" element={<Marketplace />} />
+                  <Route path="/services" element={<Services />} />
+                  <Route path="/gallery" element={<Gallery />} />
+                  <Route path="/resources" element={<Resources />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          } />
+        </Routes>
       </BrowserRouter>
 
       <Toaster />
