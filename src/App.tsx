@@ -22,9 +22,9 @@ const queryClient = new QueryClient();
 const App: React.FC = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Sonner />
-
       <BrowserRouter>
+        <Sonner />
+        <Toaster />
         <Routes>
           {/* Admin routes - no NavBar/Footer */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -51,8 +51,6 @@ const App: React.FC = () => (
           } />
         </Routes>
       </BrowserRouter>
-
-      <Toaster />
     </TooltipProvider>
   </QueryClientProvider>
 );
