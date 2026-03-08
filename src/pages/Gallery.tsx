@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ImageIcon, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { ImageIcon, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const Gallery = () => {
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -16,7 +18,27 @@ const Gallery = () => {
     fetchImages();
   }, []);
 
-  // Fill remaining slots to show 50 placeholders
+  const selectedImage = selectedIndex !== null ? images[selectedIndex] : null;
+
+  const goNext = () => {
+    if (selectedIndex !== null && selectedIndex < images.length - 1) setSelectedIndex(selectedIndex + 1);
+  };
+  const goPrev = () => {
+    if (selectedIndex !== null && selectedIndex > 0) setSelectedIndex(selectedIndex - 1);
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (selectedIndex === null) return;
+      if (e.key === 'ArrowRight') goNext();
+      if (e.key === 'ArrowLeft') goPrev();
+      if (e.key === 'Escape') setSelectedIndex(null);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selectedIndex, images.length]);
+
   const placeholderCount = Math.max(0, 50 - images.length);
 
   return (
@@ -39,8 +61,12 @@ const Gallery = () => {
           <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-            {images.map((image) => (
-              <Card key={image.id} className="overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow duration-300">
+            {images.map((image, index) => (
+              <Card
+                key={image.id}
+                className="overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow duration-300"
+                onClick={() => setSelectedIndex(index)}
+              >
                 <CardContent className="p-0">
                   <div className="aspect-square overflow-hidden">
                     <img
@@ -73,6 +99,62 @@ const Gallery = () => {
           </div>
         )}
       </div>
+
+      {/* Lightbox Modal */}
+      <Dialog open={selectedIndex !== null} onOpenChange={(open) => !open && setSelectedIndex(null)}>
+        <DialogContent className="max-w-4xl w-[95vw] p-0 bg-background border-none overflow-hidden [&>button]:hidden">
+          {selectedImage && (
+            <div className="relative">
+              {/* Close button */}
+              <button
+                onClick={() => setSelectedIndex(null)}
+                className="absolute top-3 right-3 z-10 rounded-full bg-background/80 p-2 text-foreground hover:bg-background transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {/* Navigation */}
+              {selectedIndex! > 0 && (
+                <button
+                  onClick={goPrev}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 p-2 text-foreground hover:bg-background transition-colors"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+              )}
+              {selectedIndex! < images.length - 1 && (
+                <button
+                  onClick={goNext}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 p-2 text-foreground hover:bg-background transition-colors"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              )}
+
+              {/* Image */}
+              <div className="flex items-center justify-center bg-muted/30 max-h-[70vh]">
+                <img
+                  src={selectedImage.src}
+                  alt={selectedImage.alt}
+                  className="max-h-[70vh] w-full object-contain"
+                />
+              </div>
+
+              {/* Title & Description */}
+              {(selectedImage.title || selectedImage.description) && (
+                <div className="p-4 sm:p-6">
+                  {selectedImage.title && (
+                    <h3 className="text-lg sm:text-xl font-semibold text-foreground">{selectedImage.title}</h3>
+                  )}
+                  {selectedImage.description && (
+                    <p className="mt-2 text-sm sm:text-base text-muted-foreground">{selectedImage.description}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="bg-muted/50 py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
