@@ -8,15 +8,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Trash2, Plus, LogOut, Upload, Image as ImageIcon, Package, FileText, Wrench, Loader2 } from 'lucide-react';
+import { Trash2, Plus, LogOut, Upload, Image as ImageIcon, Package, FileText, Wrench, Loader2, Pencil, Save, X } from 'lucide-react';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
-  // Redirect if not admin
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
       navigate('/admin/login');
@@ -71,6 +70,9 @@ function ProductsManager() {
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', category: '', price: '', unit: '', location: '', stock: '', tags: '', is_available: true });
   const [form, setForm] = useState({ name: '', category: '', price: '', unit: '', location: '', stock: '', tags: '' });
 
   const fetchProducts = async () => {
@@ -88,11 +90,10 @@ function ProductsManager() {
     setImagePreview(URL.createObjectURL(file));
   };
 
-  const uploadProductImage = async (): Promise<string | null> => {
-    if (!imageFile) return null;
-    const ext = imageFile.name.split('.').pop();
-    const filePath = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from('images').upload(filePath, imageFile);
+  const uploadImage = async (file: File, folder: string): Promise<string | null> => {
+    const ext = file.name.split('.').pop();
+    const filePath = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from('images').upload(filePath, file);
     if (error) {
       toast({ title: 'Image upload failed', description: error.message, variant: 'destructive' });
       return null;
@@ -104,14 +105,11 @@ function ProductsManager() {
   const addProduct = async () => {
     if (!form.name || !form.category) return;
     setUploading(true);
-    const imageUrl = await uploadProductImage();
+    const imageUrl = imageFile ? await uploadImage(imageFile, 'products') : null;
     const { error } = await supabase.from('products').insert({
-      name: form.name,
-      category: form.category,
-      price: parseFloat(form.price) || 0,
-      unit: form.unit || 'each',
-      location: form.location,
-      stock: parseInt(form.stock) || 0,
+      name: form.name, category: form.category,
+      price: parseFloat(form.price) || 0, unit: form.unit || 'each',
+      location: form.location, stock: parseInt(form.stock) || 0,
       tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
       image_url: imageUrl || '/placeholder.svg',
     });
@@ -121,8 +119,43 @@ function ProductsManager() {
     } else {
       toast({ title: 'Product added' });
       setForm({ name: '', category: '', price: '', unit: '', location: '', stock: '', tags: '' });
-      setImageFile(null);
-      setImagePreview(null);
+      setImageFile(null); setImagePreview(null);
+      fetchProducts();
+    }
+  };
+
+  const startEdit = (p: any) => {
+    setEditingId(p.id);
+    setEditForm({
+      name: p.name, category: p.category, price: String(p.price),
+      unit: p.unit || '', location: p.location || '', stock: String(p.stock || 0),
+      tags: (p.tags || []).join(', '), is_available: p.is_available ?? true,
+    });
+    setEditImageFile(null);
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    let imageUrl: string | undefined;
+    if (editImageFile) {
+      const url = await uploadImage(editImageFile, 'products');
+      if (url) imageUrl = url;
+    }
+    const updateData: any = {
+      name: editForm.name, category: editForm.category,
+      price: parseFloat(editForm.price) || 0, unit: editForm.unit,
+      location: editForm.location, stock: parseInt(editForm.stock) || 0,
+      tags: editForm.tags.split(',').map(t => t.trim()).filter(Boolean),
+      is_available: editForm.is_available,
+    };
+    if (imageUrl) updateData.image_url = imageUrl;
+
+    const { error } = await supabase.from('products').update(updateData).eq('id', editingId);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Product updated' });
+      setEditingId(null); setEditImageFile(null);
       fetchProducts();
     }
   };
@@ -159,9 +192,7 @@ function ProductsManager() {
                   <span className="text-sm text-muted-foreground">{imageFile ? imageFile.name : 'Click to select image'}</span>
                   <input type="file" className="hidden" accept="image/*" onChange={handleImageSelect} />
                 </label>
-                {imagePreview && (
-                  <img src={imagePreview} alt="Preview" className="h-16 w-16 rounded-lg object-cover border" />
-                )}
+                {imagePreview && <img src={imagePreview} alt="Preview" className="h-16 w-16 rounded-lg object-cover border" />}
               </div>
             </div>
           </div>
@@ -178,15 +209,46 @@ function ProductsManager() {
           {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
             <div className="space-y-3">
               {products.map(p => (
-                <div key={p.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <img src={p.image_url || '/placeholder.svg'} alt={p.name} className="h-10 w-10 rounded object-cover" />
-                    <div>
-                      <p className="font-medium text-sm">{p.name}</p>
-                      <p className="text-xs text-muted-foreground">{p.category} · KES {p.price} · {p.stock} in stock</p>
+                <div key={p.id} className="border rounded-lg overflow-hidden">
+                  {editingId === p.id ? (
+                    <div className="p-4 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div><Label className="text-xs">Name</Label><Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Category</Label><Input value={editForm.category} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Price (KES)</Label><Input type="number" value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Unit</Label><Input value={editForm.unit} onChange={e => setEditForm(f => ({ ...f, unit: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Location</Label><Input value={editForm.location} onChange={e => setEditForm(f => ({ ...f, location: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Stock</Label><Input type="number" value={editForm.stock} onChange={e => setEditForm(f => ({ ...f, stock: e.target.value }))} /></div>
+                        <div className="sm:col-span-2 lg:col-span-3"><Label className="text-xs">Tags</Label><Input value={editForm.tags} onChange={e => setEditForm(f => ({ ...f, tags: e.target.value }))} /></div>
+                        <div className="flex items-center gap-2">
+                          <Switch checked={editForm.is_available} onCheckedChange={v => setEditForm(f => ({ ...f, is_available: v }))} />
+                          <Label className="text-xs">Available</Label>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <Label className="text-xs">Replace Image</Label>
+                          <Input type="file" accept="image/*" onChange={e => setEditImageFile(e.target.files?.[0] || null)} />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={saveEdit}><Save className="h-3 w-3 mr-1" /> Save</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}><X className="h-3 w-3 mr-1" /> Cancel</Button>
+                      </div>
                     </div>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={() => deleteProduct(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  ) : (
+                    <div className="flex items-center justify-between p-3">
+                      <div className="flex items-center gap-3">
+                        <img src={p.image_url || '/placeholder.svg'} alt={p.name} className="h-10 w-10 rounded object-cover" />
+                        <div>
+                          <p className="font-medium text-sm">{p.name} {!p.is_available && <span className="text-xs text-destructive">(Unavailable)</span>}</p>
+                          <p className="text-xs text-muted-foreground">{p.category} · KES {p.price} · {p.stock} in stock</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => startEdit(p)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteProduct(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               {products.length === 0 && <p className="text-sm text-muted-foreground">No products yet.</p>}
@@ -203,6 +265,8 @@ function ServicesManager() {
   const { toast } = useToast();
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', description: '', price: '', duration: '', category: '', features: '', bookings: '', sort_order: '0' });
   const [form, setForm] = useState({ name: '', description: '', price: '', duration: '', category: '', features: '', bookings: '' });
 
   const fetchServices = async () => {
@@ -216,19 +280,42 @@ function ServicesManager() {
   const addService = async () => {
     if (!form.name) return;
     const { error } = await supabase.from('services').insert({
-      name: form.name,
-      description: form.description,
-      price: form.price,
-      duration: form.duration,
-      category: form.category,
-      features: form.features.split('\n').filter(Boolean),
-      bookings: form.bookings,
+      name: form.name, description: form.description,
+      price: form.price, duration: form.duration, category: form.category,
+      features: form.features.split('\n').filter(Boolean), bookings: form.bookings,
     });
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Service added' });
       setForm({ name: '', description: '', price: '', duration: '', category: '', features: '', bookings: '' });
+      fetchServices();
+    }
+  };
+
+  const startEdit = (s: any) => {
+    setEditingId(s.id);
+    setEditForm({
+      name: s.name, description: s.description || '', price: s.price || '',
+      duration: s.duration || '', category: s.category || '',
+      features: (s.features || []).join('\n'), bookings: s.bookings || '',
+      sort_order: String(s.sort_order || 0),
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    const { error } = await supabase.from('services').update({
+      name: editForm.name, description: editForm.description,
+      price: editForm.price, duration: editForm.duration, category: editForm.category,
+      features: editForm.features.split('\n').filter(Boolean), bookings: editForm.bookings,
+      sort_order: parseInt(editForm.sort_order) || 0,
+    }).eq('id', editingId);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Service updated' });
+      setEditingId(null);
       fetchServices();
     }
   };
@@ -263,12 +350,36 @@ function ServicesManager() {
           {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
             <div className="space-y-3">
               {services.map(s => (
-                <div key={s.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium text-sm">{s.name}</p>
-                    <p className="text-xs text-muted-foreground">{s.category} · {s.price}</p>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={() => deleteService(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                <div key={s.id} className="border rounded-lg overflow-hidden">
+                  {editingId === s.id ? (
+                    <div className="p-4 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><Label className="text-xs">Name</Label><Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Category</Label><Input value={editForm.category} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Price</Label><Input value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Duration</Label><Input value={editForm.duration} onChange={e => setEditForm(f => ({ ...f, duration: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Bookings</Label><Input value={editForm.bookings} onChange={e => setEditForm(f => ({ ...f, bookings: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Sort Order</Label><Input type="number" value={editForm.sort_order} onChange={e => setEditForm(f => ({ ...f, sort_order: e.target.value }))} /></div>
+                        <div className="sm:col-span-2"><Label className="text-xs">Description</Label><Textarea value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} /></div>
+                        <div className="sm:col-span-2"><Label className="text-xs">Features (one per line)</Label><Textarea value={editForm.features} onChange={e => setEditForm(f => ({ ...f, features: e.target.value }))} rows={4} /></div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={saveEdit}><Save className="h-3 w-3 mr-1" /> Save</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}><X className="h-3 w-3 mr-1" /> Cancel</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-3">
+                      <div>
+                        <p className="font-medium text-sm">{s.name}</p>
+                        <p className="text-xs text-muted-foreground">{s.category} · {s.price} · {s.duration}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => startEdit(s)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteService(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               {services.length === 0 && <p className="text-sm text-muted-foreground">No services yet.</p>}
@@ -287,7 +398,7 @@ function GalleryManager() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ title: '', description: '', alt: '' });
+  const [editForm, setEditForm] = useState({ title: '', description: '', alt: '', sort_order: '0' });
 
   const fetchImages = async () => {
     const { data } = await supabase.from('gallery_images').select('*').order('sort_order');
@@ -301,28 +412,14 @@ function GalleryManager() {
     const files = e.target.files;
     if (!files?.length) return;
     setUploading(true);
-
     for (const file of Array.from(files)) {
       const ext = file.name.split('.').pop();
       const filePath = `gallery/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      
       const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
-      if (uploadError) {
-        toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' });
-        continue;
-      }
-
+      if (uploadError) { toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' }); continue; }
       const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-      
-      await supabase.from('gallery_images').insert({
-        src: publicUrl,
-        alt: file.name.replace(/\.[^.]+$/, ''),
-        title: '',
-        description: '',
-        sort_order: images.length,
-      });
+      await supabase.from('gallery_images').insert({ src: publicUrl, alt: file.name.replace(/\.[^.]+$/, ''), title: '', description: '', sort_order: images.length });
     }
-
     toast({ title: 'Images uploaded' });
     setUploading(false);
     fetchImages();
@@ -330,9 +427,7 @@ function GalleryManager() {
 
   const deleteImage = async (img: any) => {
     const urlParts = img.src.split('/images/');
-    if (urlParts[1]) {
-      await supabase.storage.from('images').remove([urlParts[1]]);
-    }
+    if (urlParts[1]) await supabase.storage.from('images').remove([urlParts[1]]);
     await supabase.from('gallery_images').delete().eq('id', img.id);
     toast({ title: 'Image deleted' });
     fetchImages();
@@ -340,12 +435,15 @@ function GalleryManager() {
 
   const startEdit = (img: any) => {
     setEditingId(img.id);
-    setEditForm({ title: img.title || '', description: img.description || '', alt: img.alt || '' });
+    setEditForm({ title: img.title || '', description: img.description || '', alt: img.alt || '', sort_order: String(img.sort_order || 0) });
   };
 
   const saveEdit = async () => {
     if (!editingId) return;
-    const { error } = await supabase.from('gallery_images').update(editForm).eq('id', editingId);
+    const { error } = await supabase.from('gallery_images').update({
+      title: editForm.title, description: editForm.description, alt: editForm.alt,
+      sort_order: parseInt(editForm.sort_order) || 0,
+    }).eq('id', editingId);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
@@ -377,29 +475,26 @@ function GalleryManager() {
                 <div key={img.id} className="border rounded-lg overflow-hidden">
                   <div className="relative group">
                     <img src={img.src} alt={img.alt} className="aspect-square object-cover w-full" />
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-1 right-1 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => deleteImage(img)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="secondary" size="sm" className="h-7 w-7 p-0" onClick={() => startEdit(img)}><Pencil className="h-3 w-3" /></Button>
+                      <Button variant="destructive" size="sm" className="h-7 w-7 p-0" onClick={() => deleteImage(img)}><Trash2 className="h-3 w-3" /></Button>
+                    </div>
                   </div>
                   {editingId === img.id ? (
                     <div className="p-3 space-y-2">
-                      <div><Label className="text-xs">Title</Label><Input value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} placeholder="Image title" /></div>
-                      <div><Label className="text-xs">Description</Label><Textarea value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} placeholder="Image description" rows={2} /></div>
-                      <div><Label className="text-xs">Alt Text</Label><Input value={editForm.alt} onChange={e => setEditForm(f => ({ ...f, alt: e.target.value }))} placeholder="Alt text" /></div>
+                      <div><Label className="text-xs">Title</Label><Input value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} /></div>
+                      <div><Label className="text-xs">Description</Label><Textarea value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} rows={2} /></div>
+                      <div><Label className="text-xs">Alt Text</Label><Input value={editForm.alt} onChange={e => setEditForm(f => ({ ...f, alt: e.target.value }))} /></div>
+                      <div><Label className="text-xs">Sort Order</Label><Input type="number" value={editForm.sort_order} onChange={e => setEditForm(f => ({ ...f, sort_order: e.target.value }))} /></div>
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={saveEdit}>Save</Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
+                        <Button size="sm" onClick={saveEdit}><Save className="h-3 w-3 mr-1" /> Save</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}><X className="h-3 w-3 mr-1" /> Cancel</Button>
                       </div>
                     </div>
                   ) : (
                     <div className="p-3 cursor-pointer" onClick={() => startEdit(img)}>
                       <p className="font-medium text-sm truncate">{img.title || 'No title'}</p>
-                      <p className="text-xs text-muted-foreground truncate">{img.description || 'Click to add details'}</p>
+                      <p className="text-xs text-muted-foreground truncate">{img.description || 'Click to edit'}</p>
                     </div>
                   )}
                 </div>
@@ -418,6 +513,8 @@ function ContentManager() {
   const { toast } = useToast();
   const [contents, setContents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ page_slug: '', section_key: '', title: '', content: '' });
   const [form, setForm] = useState({ page_slug: '', section_key: '', title: '', content: '' });
 
   const fetchContent = async () => {
@@ -431,16 +528,34 @@ function ContentManager() {
   const saveContent = async () => {
     if (!form.page_slug || !form.section_key) return;
     const { error } = await supabase.from('page_content').upsert({
-      page_slug: form.page_slug,
-      section_key: form.section_key,
-      title: form.title,
-      content: form.content,
+      page_slug: form.page_slug, section_key: form.section_key,
+      title: form.title, content: form.content,
     }, { onConflict: 'page_slug,section_key' });
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Content saved' });
       setForm({ page_slug: '', section_key: '', title: '', content: '' });
+      fetchContent();
+    }
+  };
+
+  const startEdit = (c: any) => {
+    setEditingId(c.id);
+    setEditForm({ page_slug: c.page_slug, section_key: c.section_key, title: c.title || '', content: c.content || '' });
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    const { error } = await supabase.from('page_content').update({
+      page_slug: editForm.page_slug, section_key: editForm.section_key,
+      title: editForm.title, content: editForm.content,
+    }).eq('id', editingId);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Content updated' });
+      setEditingId(null);
       fetchContent();
     }
   };
@@ -472,12 +587,32 @@ function ContentManager() {
           {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
             <div className="space-y-3">
               {contents.map(c => (
-                <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{c.page_slug} / {c.section_key}</p>
-                    <p className="text-xs text-muted-foreground truncate">{c.title || c.content?.slice(0, 80)}</p>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={() => deleteContent(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                <div key={c.id} className="border rounded-lg overflow-hidden">
+                  {editingId === c.id ? (
+                    <div className="p-4 space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><Label className="text-xs">Page Slug</Label><Input value={editForm.page_slug} onChange={e => setEditForm(f => ({ ...f, page_slug: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Section Key</Label><Input value={editForm.section_key} onChange={e => setEditForm(f => ({ ...f, section_key: e.target.value }))} /></div>
+                        <div className="sm:col-span-2"><Label className="text-xs">Title</Label><Input value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} /></div>
+                        <div className="sm:col-span-2"><Label className="text-xs">Content</Label><Textarea value={editForm.content} onChange={e => setEditForm(f => ({ ...f, content: e.target.value }))} rows={4} /></div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={saveEdit}><Save className="h-3 w-3 mr-1" /> Save</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}><X className="h-3 w-3 mr-1" /> Cancel</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{c.page_slug} / {c.section_key}</p>
+                        <p className="text-xs text-muted-foreground truncate">{c.title || c.content?.slice(0, 80)}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => startEdit(c)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteContent(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               {contents.length === 0 && <p className="text-sm text-muted-foreground">No content yet.</p>}
