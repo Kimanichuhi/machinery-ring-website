@@ -49,6 +49,12 @@ const Gallery = () => {
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
+                  {(image.title || image.description) && (
+                    <div className="p-2 sm:p-3">
+                      {image.title && <p className="font-medium text-xs sm:text-sm truncate text-foreground">{image.title}</p>}
+                      {image.description && <p className="text-xs text-muted-foreground truncate mt-0.5">{image.description}</p>}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
