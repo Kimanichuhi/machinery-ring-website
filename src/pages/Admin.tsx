@@ -286,6 +286,8 @@ function GalleryManager() {
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ title: '', description: '', alt: '' });
 
   const fetchImages = async () => {
     const { data } = await supabase.from('gallery_images').select('*').order('sort_order');
@@ -315,6 +317,8 @@ function GalleryManager() {
       await supabase.from('gallery_images').insert({
         src: publicUrl,
         alt: file.name.replace(/\.[^.]+$/, ''),
+        title: '',
+        description: '',
         sort_order: images.length,
       });
     }
@@ -325,7 +329,6 @@ function GalleryManager() {
   };
 
   const deleteImage = async (img: any) => {
-    // Extract path from URL
     const urlParts = img.src.split('/images/');
     if (urlParts[1]) {
       await supabase.storage.from('images').remove([urlParts[1]]);
@@ -333,6 +336,23 @@ function GalleryManager() {
     await supabase.from('gallery_images').delete().eq('id', img.id);
     toast({ title: 'Image deleted' });
     fetchImages();
+  };
+
+  const startEdit = (img: any) => {
+    setEditingId(img.id);
+    setEditForm({ title: img.title || '', description: img.description || '', alt: img.alt || '' });
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    const { error } = await supabase.from('gallery_images').update(editForm).eq('id', editingId);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Image updated' });
+      setEditingId(null);
+      fetchImages();
+    }
   };
 
   return (
@@ -352,18 +372,36 @@ function GalleryManager() {
         <CardHeader><CardTitle className="text-lg">Gallery Images ({images.length})</CardTitle></CardHeader>
         <CardContent>
           {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {images.map(img => (
-                <div key={img.id} className="relative group">
-                  <img src={img.src} alt={img.alt} className="aspect-square object-cover rounded-lg w-full" />
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-1 right-1 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => deleteImage(img)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                <div key={img.id} className="border rounded-lg overflow-hidden">
+                  <div className="relative group">
+                    <img src={img.src} alt={img.alt} className="aspect-square object-cover w-full" />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-1 right-1 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => deleteImage(img)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  {editingId === img.id ? (
+                    <div className="p-3 space-y-2">
+                      <div><Label className="text-xs">Title</Label><Input value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} placeholder="Image title" /></div>
+                      <div><Label className="text-xs">Description</Label><Textarea value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} placeholder="Image description" rows={2} /></div>
+                      <div><Label className="text-xs">Alt Text</Label><Input value={editForm.alt} onChange={e => setEditForm(f => ({ ...f, alt: e.target.value }))} placeholder="Alt text" /></div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={saveEdit}>Save</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 cursor-pointer" onClick={() => startEdit(img)}>
+                      <p className="font-medium text-sm truncate">{img.title || 'No title'}</p>
+                      <p className="text-xs text-muted-foreground truncate">{img.description || 'Click to add details'}</p>
+                    </div>
+                  )}
                 </div>
               ))}
               {images.length === 0 && <p className="text-sm text-muted-foreground col-span-full">No images yet.</p>}
