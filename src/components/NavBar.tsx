@@ -51,9 +51,9 @@ export function NavBar() {
 
         {/* Mobile */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild className="lg:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(true)}>
-              <Menu className="h-6 w-6" />
+          <SheetTrigger asChild className="lg:hidden ml-auto">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setMobileMenuOpen(true)}>
+              <Menu className="h-4 w-4" />
             </Button>
           </SheetTrigger>
 
