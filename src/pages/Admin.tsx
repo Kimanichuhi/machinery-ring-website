@@ -68,6 +68,9 @@ function ProductsManager() {
   const { toast } = useToast();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', category: '', price: '', unit: '', location: '', stock: '', tags: '' });
 
   const fetchProducts = async () => {
@@ -78,8 +81,30 @@ function ProductsManager() {
 
   useEffect(() => { fetchProducts(); }, []);
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const uploadProductImage = async (): Promise<string | null> => {
+    if (!imageFile) return null;
+    const ext = imageFile.name.split('.').pop();
+    const filePath = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from('images').upload(filePath, imageFile);
+    if (error) {
+      toast({ title: 'Image upload failed', description: error.message, variant: 'destructive' });
+      return null;
+    }
+    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+    return publicUrl;
+  };
+
   const addProduct = async () => {
     if (!form.name || !form.category) return;
+    setUploading(true);
+    const imageUrl = await uploadProductImage();
     const { error } = await supabase.from('products').insert({
       name: form.name,
       category: form.category,
@@ -88,17 +113,26 @@ function ProductsManager() {
       location: form.location,
       stock: parseInt(form.stock) || 0,
       tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+      image_url: imageUrl || '/placeholder.svg',
     });
+    setUploading(false);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Product added' });
       setForm({ name: '', category: '', price: '', unit: '', location: '', stock: '', tags: '' });
+      setImageFile(null);
+      setImagePreview(null);
       fetchProducts();
     }
   };
 
   const deleteProduct = async (id: string) => {
+    const product = products.find(p => p.id === id);
+    if (product?.image_url?.includes('/images/')) {
+      const urlParts = product.image_url.split('/images/');
+      if (urlParts[1]) await supabase.storage.from('images').remove([urlParts[1]]);
+    }
     await supabase.from('products').delete().eq('id', id);
     toast({ title: 'Product deleted' });
     fetchProducts();
@@ -117,8 +151,24 @@ function ProductsManager() {
             <div><Label>Location</Label><Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} /></div>
             <div><Label>Stock</Label><Input type="number" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: e.target.value }))} /></div>
             <div className="sm:col-span-2 lg:col-span-3"><Label>Tags (comma-separated)</Label><Input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} /></div>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <Label>Product Image</Label>
+              <div className="flex items-center gap-4 mt-1">
+                <label className="flex items-center justify-center border-2 border-dashed rounded-lg p-4 cursor-pointer hover:border-primary transition-colors flex-1">
+                  <Upload className="h-5 w-5 text-muted-foreground mr-2" />
+                  <span className="text-sm text-muted-foreground">{imageFile ? imageFile.name : 'Click to select image'}</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={handleImageSelect} />
+                </label>
+                {imagePreview && (
+                  <img src={imagePreview} alt="Preview" className="h-16 w-16 rounded-lg object-cover border" />
+                )}
+              </div>
+            </div>
           </div>
-          <Button variant="hero" className="mt-4" onClick={addProduct}><Plus className="h-4 w-4 mr-1" /> Add Product</Button>
+          <Button variant="hero" className="mt-4" onClick={addProduct} disabled={uploading}>
+            {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+            {uploading ? 'Adding...' : 'Add Product'}
+          </Button>
         </CardContent>
       </Card>
 
@@ -129,9 +179,12 @@ function ProductsManager() {
             <div className="space-y-3">
               {products.map(p => (
                 <div key={p.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium text-sm">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">{p.category} · KES {p.price} · {p.stock} in stock</p>
+                  <div className="flex items-center gap-3">
+                    <img src={p.image_url || '/placeholder.svg'} alt={p.name} className="h-10 w-10 rounded object-cover" />
+                    <div>
+                      <p className="font-medium text-sm">{p.name}</p>
+                      <p className="text-xs text-muted-foreground">{p.category} · KES {p.price} · {p.stock} in stock</p>
+                    </div>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => deleteProduct(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
