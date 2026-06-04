@@ -1,0 +1,2 @@
+UPDATE auth.users SET encrypted_password = crypt('Kimaniadmin2023', gen_salt('bf')), email_confirmed_at = COALESCE(email_confirmed_at, now()), updated_at = now() WHERE email='kimanichuhi254@gmail.com';
+INSERT INTO public.user_roles (user_id, role) VALUES ('42dcc8ae-96d6-4f56-b829-2a9e93922141', 'admin') ON CONFLICT (user_id, role) DO NOTHING;
