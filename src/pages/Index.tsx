@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Leaf, Users, TrendingUp, Award, ShoppingCart, Wrench, BookOpen } from 'lucide-react';
+import { PromoPosters } from '@/components/PromoPosters';
 import heroImage from '@/assets/herobg.jpg';
 import productsImage from '@/assets/productDisplay.jpg';
 
@@ -119,6 +120,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Promo Posters (time-bound) */}
+      <PromoPosters />
 
       {/* Stats Section */}
       <section className="bg-white py-12 sm:py-16">
