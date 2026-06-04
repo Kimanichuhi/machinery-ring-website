@@ -11,6 +11,7 @@ import Marketplace from "./pages/Marketplace";
 import Services from "./pages/Services";
 import Gallery from "./pages/Gallery";
 import Resources from "./pages/Resources";
+import GuideDetail from "./pages/GuideDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -41,6 +42,7 @@ const App: React.FC = () => (
                   <Route path="/services" element={<Services />} />
                   <Route path="/gallery" element={<Gallery />} />
                   <Route path="/resources" element={<Resources />} />
+                  <Route path="/guides/:slug" element={<GuideDetail />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="*" element={<NotFound />} />

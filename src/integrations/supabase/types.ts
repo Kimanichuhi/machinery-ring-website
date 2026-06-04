@@ -44,6 +44,78 @@ export type Database = {
         }
         Relationships: []
       }
+      guides: {
+        Row: {
+          category: string | null
+          content: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_popular: boolean
+          is_published: boolean
+          read_time: string | null
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_popular?: boolean
+          is_published?: boolean
+          read_time?: string | null
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_popular?: boolean
+          is_published?: boolean
+          read_time?: string | null
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+        }
+        Relationships: []
+      }
       page_content: {
         Row: {
           content: string | null
@@ -149,6 +221,51 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      promo_posters: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          image_url: string
+          is_active: boolean
+          link_label: string | null
+          link_url: string | null
+          sort_order: number
+          start_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link_label?: string | null
+          link_url?: string | null
+          sort_order?: number
+          start_date?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link_label?: string | null
+          link_url?: string | null
+          sort_order?: number
+          start_date?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

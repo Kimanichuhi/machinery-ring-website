@@ -68,17 +68,22 @@ const Gallery = () => {
                 onClick={() => setSelectedIndex(index)}
               >
                 <CardContent className="p-0">
-                  <div className="aspect-square overflow-hidden">
+                  <div className="relative aspect-square overflow-hidden">
                     <img
                       src={image.src}
                       alt={image.alt}
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
+                    {(image.title || image.description) && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                        {image.title && <p className="text-white font-semibold text-sm sm:text-base line-clamp-1">{image.title}</p>}
+                        {image.description && <p className="text-white/90 text-xs sm:text-sm line-clamp-3 mt-1">{image.description}</p>}
+                      </div>
+                    )}
                   </div>
                   {(image.title || image.description) && (
-                    <div className="p-2 sm:p-3">
-                      {image.title && <p className="font-medium text-xs sm:text-sm truncate text-foreground">{image.title}</p>}
-                      {image.description && <p className="text-xs text-muted-foreground truncate mt-0.5">{image.description}</p>}
+                    <div className="p-2 sm:p-3 sm:hidden">
+                      {image.title && <p className="font-medium text-xs truncate text-foreground">{image.title}</p>}
                     </div>
                   )}
                 </CardContent>

@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Trash2, Plus, LogOut, Upload, Image as ImageIcon, Package, FileText, Wrench, Loader2, Pencil, Save, X } from 'lucide-react';
+import { Trash2, Plus, LogOut, Upload, Image as ImageIcon, Package, FileText, Wrench, Loader2, Pencil, Save, X, Megaphone, BookOpen, Mail, Calendar } from 'lucide-react';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
@@ -45,16 +45,22 @@ const Admin = () => {
 
       <div className="mx-auto max-w-7xl px-4 py-6">
         <Tabs defaultValue="products">
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap h-auto">
             <TabsTrigger value="products"><Package className="h-4 w-4 mr-1" /> Products</TabsTrigger>
             <TabsTrigger value="services"><Wrench className="h-4 w-4 mr-1" /> Services</TabsTrigger>
             <TabsTrigger value="gallery"><ImageIcon className="h-4 w-4 mr-1" /> Gallery</TabsTrigger>
+            <TabsTrigger value="posters"><Megaphone className="h-4 w-4 mr-1" /> Posters</TabsTrigger>
+            <TabsTrigger value="guides"><BookOpen className="h-4 w-4 mr-1" /> Guides</TabsTrigger>
+            <TabsTrigger value="newsletter"><Mail className="h-4 w-4 mr-1" /> Newsletter</TabsTrigger>
             <TabsTrigger value="content"><FileText className="h-4 w-4 mr-1" /> Page Content</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products"><ProductsManager /></TabsContent>
           <TabsContent value="services"><ServicesManager /></TabsContent>
           <TabsContent value="gallery"><GalleryManager /></TabsContent>
+          <TabsContent value="posters"><PostersManager /></TabsContent>
+          <TabsContent value="guides"><GuidesManager /></TabsContent>
+          <TabsContent value="newsletter"><NewsletterManager /></TabsContent>
           <TabsContent value="content"><ContentManager /></TabsContent>
         </Tabs>
       </div>
@@ -616,6 +622,429 @@ function ContentManager() {
                 </div>
               ))}
               {contents.length === 0 && <p className="text-sm text-muted-foreground">No content yet.</p>}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+
+// ============ POSTERS MANAGER ============
+function PostersManager() {
+  const { toast } = useToast();
+  const [posters, setPosters] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const today = new Date().toISOString().slice(0, 10);
+  const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+  const [form, setForm] = useState({ title: '', description: '', link_url: '', link_label: 'Learn More', start_date: today, end_date: nextWeek, sort_order: '0' });
+  const [editForm, setEditForm] = useState({ title: '', description: '', link_url: '', link_label: '', start_date: '', end_date: '', sort_order: '0', is_active: true });
+
+  const fetchPosters = async () => {
+    const { data } = await supabase.from('promo_posters').select('*').order('sort_order');
+    setPosters(data || []);
+    setLoading(false);
+  };
+  useEffect(() => { fetchPosters(); }, []);
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const ext = file.name.split('.').pop();
+    const filePath = `posters/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from('images').upload(filePath, file);
+    if (error) { toast({ title: 'Upload failed', description: error.message, variant: 'destructive' }); return null; }
+    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+    return publicUrl;
+  };
+
+  const addPoster = async () => {
+    if (!form.title || !imageFile) {
+      toast({ title: 'Title and image required', variant: 'destructive' });
+      return;
+    }
+    setUploading(true);
+    const imageUrl = await uploadImage(imageFile);
+    if (!imageUrl) { setUploading(false); return; }
+    const { error } = await supabase.from('promo_posters').insert({
+      title: form.title, description: form.description,
+      image_url: imageUrl, link_url: form.link_url, link_label: form.link_label || 'Learn More',
+      start_date: new Date(form.start_date).toISOString(),
+      end_date: new Date(form.end_date + 'T23:59:59').toISOString(),
+      sort_order: parseInt(form.sort_order) || 0,
+    });
+    setUploading(false);
+    if (error) toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    else {
+      toast({ title: 'Poster added' });
+      setForm({ title: '', description: '', link_url: '', link_label: 'Learn More', start_date: today, end_date: nextWeek, sort_order: '0' });
+      setImageFile(null);
+      fetchPosters();
+    }
+  };
+
+  const startEdit = (p: any) => {
+    setEditingId(p.id);
+    setEditForm({
+      title: p.title, description: p.description || '', link_url: p.link_url || '',
+      link_label: p.link_label || 'Learn More',
+      start_date: p.start_date.slice(0, 10), end_date: p.end_date.slice(0, 10),
+      sort_order: String(p.sort_order || 0), is_active: p.is_active,
+    });
+    setEditImageFile(null);
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    let imageUrl: string | undefined;
+    if (editImageFile) {
+      const url = await uploadImage(editImageFile);
+      if (url) imageUrl = url;
+    }
+    const updateData: any = {
+      title: editForm.title, description: editForm.description,
+      link_url: editForm.link_url, link_label: editForm.link_label,
+      start_date: new Date(editForm.start_date).toISOString(),
+      end_date: new Date(editForm.end_date + 'T23:59:59').toISOString(),
+      sort_order: parseInt(editForm.sort_order) || 0,
+      is_active: editForm.is_active,
+    };
+    if (imageUrl) updateData.image_url = imageUrl;
+    const { error } = await supabase.from('promo_posters').update(updateData).eq('id', editingId);
+    if (error) toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    else { toast({ title: 'Poster updated' }); setEditingId(null); setEditImageFile(null); fetchPosters(); }
+  };
+
+  const deletePoster = async (p: any) => {
+    if (p.image_url?.includes('/images/')) {
+      const parts = p.image_url.split('/images/');
+      if (parts[1]) await supabase.storage.from('images').remove([parts[1]]);
+    }
+    await supabase.from('promo_posters').delete().eq('id', p.id);
+    toast({ title: 'Poster deleted' });
+    fetchPosters();
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader><CardTitle className="text-lg">Add Promo Poster</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2"><Label>Title *</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} /></div>
+            <div className="sm:col-span-2"><Label>Description</Label><Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} /></div>
+            <div><Label>Link URL</Label><Input value={form.link_url} onChange={e => setForm(f => ({ ...f, link_url: e.target.value }))} placeholder="/services or https://..." /></div>
+            <div><Label>Button Label</Label><Input value={form.link_label} onChange={e => setForm(f => ({ ...f, link_label: e.target.value }))} /></div>
+            <div><Label>Start Date *</Label><Input type="date" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} /></div>
+            <div><Label>End Date *</Label><Input type="date" value={form.end_date} onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))} /></div>
+            <div><Label>Sort Order</Label><Input type="number" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: e.target.value }))} /></div>
+            <div className="sm:col-span-2">
+              <Label>Poster Image *</Label>
+              <Input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] || null)} />
+            </div>
+          </div>
+          <Button variant="hero" className="mt-4" onClick={addPoster} disabled={uploading}>
+            {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+            {uploading ? 'Adding...' : 'Add Poster'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-lg">Posters ({posters.length})</CardTitle></CardHeader>
+        <CardContent>
+          {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+            <div className="space-y-3">
+              {posters.map(p => {
+                const now = new Date();
+                const expired = new Date(p.end_date) < now;
+                const upcoming = new Date(p.start_date) > now;
+                return (
+                  <div key={p.id} className="border rounded-lg overflow-hidden">
+                    {editingId === p.id ? (
+                      <div className="p-4 space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="sm:col-span-2"><Label className="text-xs">Title</Label><Input value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} /></div>
+                          <div className="sm:col-span-2"><Label className="text-xs">Description</Label><Textarea value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} rows={3} /></div>
+                          <div><Label className="text-xs">Link URL</Label><Input value={editForm.link_url} onChange={e => setEditForm(f => ({ ...f, link_url: e.target.value }))} /></div>
+                          <div><Label className="text-xs">Button Label</Label><Input value={editForm.link_label} onChange={e => setEditForm(f => ({ ...f, link_label: e.target.value }))} /></div>
+                          <div><Label className="text-xs">Start Date</Label><Input type="date" value={editForm.start_date} onChange={e => setEditForm(f => ({ ...f, start_date: e.target.value }))} /></div>
+                          <div><Label className="text-xs">End Date</Label><Input type="date" value={editForm.end_date} onChange={e => setEditForm(f => ({ ...f, end_date: e.target.value }))} /></div>
+                          <div><Label className="text-xs">Sort Order</Label><Input type="number" value={editForm.sort_order} onChange={e => setEditForm(f => ({ ...f, sort_order: e.target.value }))} /></div>
+                          <div className="flex items-center gap-2"><Switch checked={editForm.is_active} onCheckedChange={v => setEditForm(f => ({ ...f, is_active: v }))} /><Label className="text-xs">Active</Label></div>
+                          <div className="sm:col-span-2"><Label className="text-xs">Replace Image</Label><Input type="file" accept="image/*" onChange={e => setEditImageFile(e.target.files?.[0] || null)} /></div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={saveEdit}><Save className="h-3 w-3 mr-1" /> Save</Button>
+                          <Button size="sm" variant="outline" onClick={() => setEditingId(null)}><X className="h-3 w-3 mr-1" /> Cancel</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between p-3 gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <img src={p.image_url} alt={p.title} className="h-14 w-14 rounded object-cover flex-shrink-0" />
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm truncate">{p.title}</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(p.start_date).toLocaleDateString()} – {new Date(p.end_date).toLocaleDateString()}
+                            </p>
+                            <p className="text-xs mt-0.5">
+                              {!p.is_active && <span className="text-destructive">Inactive · </span>}
+                              {expired && <span className="text-destructive">Expired</span>}
+                              {upcoming && <span className="text-muted-foreground">Scheduled</span>}
+                              {!expired && !upcoming && p.is_active && <span className="text-green-600">Live</span>}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-1 flex-shrink-0">
+                          <Button variant="ghost" size="sm" onClick={() => startEdit(p)}><Pencil className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="sm" onClick={() => deletePoster(p)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {posters.length === 0 && <p className="text-sm text-muted-foreground">No posters yet.</p>}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ============ GUIDES MANAGER ============
+function GuidesManager() {
+  const { toast } = useToast();
+  const [guides, setGuides] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [form, setForm] = useState({ slug: '', title: '', description: '', category: 'General', content: '', read_time: '5 min read', is_popular: false, is_published: true, sort_order: '0' });
+  const [editForm, setEditForm] = useState({ slug: '', title: '', description: '', category: '', content: '', read_time: '', is_popular: false, is_published: true, sort_order: '0' });
+
+  const fetchGuides = async () => {
+    const { data } = await supabase.from('guides').select('*').order('sort_order');
+    setGuides(data || []);
+    setLoading(false);
+  };
+  useEffect(() => { fetchGuides(); }, []);
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const ext = file.name.split('.').pop();
+    const filePath = `guides/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from('images').upload(filePath, file);
+    if (error) { toast({ title: 'Upload failed', description: error.message, variant: 'destructive' }); return null; }
+    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+    return publicUrl;
+  };
+
+  const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  const addGuide = async () => {
+    if (!form.title) return;
+    setUploading(true);
+    const imageUrl = imageFile ? await uploadImage(imageFile) : null;
+    const { error } = await supabase.from('guides').insert({
+      slug: form.slug || slugify(form.title),
+      title: form.title, description: form.description, category: form.category,
+      content: form.content, read_time: form.read_time,
+      is_popular: form.is_popular, is_published: form.is_published,
+      sort_order: parseInt(form.sort_order) || 0,
+      image_url: imageUrl || '',
+    });
+    setUploading(false);
+    if (error) toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    else {
+      toast({ title: 'Guide added' });
+      setForm({ slug: '', title: '', description: '', category: 'General', content: '', read_time: '5 min read', is_popular: false, is_published: true, sort_order: '0' });
+      setImageFile(null);
+      fetchGuides();
+    }
+  };
+
+  const startEdit = (g: any) => {
+    setEditingId(g.id);
+    setEditForm({
+      slug: g.slug, title: g.title, description: g.description || '',
+      category: g.category || '', content: g.content || '', read_time: g.read_time || '',
+      is_popular: g.is_popular, is_published: g.is_published,
+      sort_order: String(g.sort_order || 0),
+    });
+    setEditImageFile(null);
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    let imageUrl: string | undefined;
+    if (editImageFile) {
+      const url = await uploadImage(editImageFile);
+      if (url) imageUrl = url;
+    }
+    const updateData: any = {
+      slug: editForm.slug, title: editForm.title, description: editForm.description,
+      category: editForm.category, content: editForm.content, read_time: editForm.read_time,
+      is_popular: editForm.is_popular, is_published: editForm.is_published,
+      sort_order: parseInt(editForm.sort_order) || 0,
+    };
+    if (imageUrl) updateData.image_url = imageUrl;
+    const { error } = await supabase.from('guides').update(updateData).eq('id', editingId);
+    if (error) toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    else { toast({ title: 'Guide updated' }); setEditingId(null); fetchGuides(); }
+  };
+
+  const deleteGuide = async (id: string) => {
+    await supabase.from('guides').delete().eq('id', id);
+    toast({ title: 'Guide deleted' });
+    fetchGuides();
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader><CardTitle className="text-lg">Add Guide</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} /></div>
+            <div><Label>Slug (URL)</Label><Input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} placeholder="auto from title if blank" /></div>
+            <div><Label>Category</Label><Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} /></div>
+            <div><Label>Read Time</Label><Input value={form.read_time} onChange={e => setForm(f => ({ ...f, read_time: e.target.value }))} placeholder="5 min read" /></div>
+            <div className="sm:col-span-2"><Label>Description</Label><Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} /></div>
+            <div className="sm:col-span-2"><Label>Content (supports ## headings and - bullets)</Label><Textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={8} /></div>
+            <div><Label>Sort Order</Label><Input type="number" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: e.target.value }))} /></div>
+            <div className="flex items-center gap-4 flex-wrap pt-6">
+              <div className="flex items-center gap-2"><Switch checked={form.is_popular} onCheckedChange={v => setForm(f => ({ ...f, is_popular: v }))} /><Label>Popular</Label></div>
+              <div className="flex items-center gap-2"><Switch checked={form.is_published} onCheckedChange={v => setForm(f => ({ ...f, is_published: v }))} /><Label>Published</Label></div>
+            </div>
+            <div className="sm:col-span-2"><Label>Cover Image</Label><Input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] || null)} /></div>
+          </div>
+          <Button variant="hero" className="mt-4" onClick={addGuide} disabled={uploading}>
+            {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+            Add Guide
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-lg">Guides ({guides.length})</CardTitle></CardHeader>
+        <CardContent>
+          {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+            <div className="space-y-3">
+              {guides.map(g => (
+                <div key={g.id} className="border rounded-lg overflow-hidden">
+                  {editingId === g.id ? (
+                    <div className="p-4 space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><Label className="text-xs">Title</Label><Input value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Slug</Label><Input value={editForm.slug} onChange={e => setEditForm(f => ({ ...f, slug: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Category</Label><Input value={editForm.category} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} /></div>
+                        <div><Label className="text-xs">Read Time</Label><Input value={editForm.read_time} onChange={e => setEditForm(f => ({ ...f, read_time: e.target.value }))} /></div>
+                        <div className="sm:col-span-2"><Label className="text-xs">Description</Label><Textarea value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} rows={2} /></div>
+                        <div className="sm:col-span-2"><Label className="text-xs">Content</Label><Textarea value={editForm.content} onChange={e => setEditForm(f => ({ ...f, content: e.target.value }))} rows={10} /></div>
+                        <div><Label className="text-xs">Sort Order</Label><Input type="number" value={editForm.sort_order} onChange={e => setEditForm(f => ({ ...f, sort_order: e.target.value }))} /></div>
+                        <div className="flex items-center gap-4 flex-wrap pt-6">
+                          <div className="flex items-center gap-2"><Switch checked={editForm.is_popular} onCheckedChange={v => setEditForm(f => ({ ...f, is_popular: v }))} /><Label className="text-xs">Popular</Label></div>
+                          <div className="flex items-center gap-2"><Switch checked={editForm.is_published} onCheckedChange={v => setEditForm(f => ({ ...f, is_published: v }))} /><Label className="text-xs">Published</Label></div>
+                        </div>
+                        <div className="sm:col-span-2"><Label className="text-xs">Replace Image</Label><Input type="file" accept="image/*" onChange={e => setEditImageFile(e.target.files?.[0] || null)} /></div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={saveEdit}><Save className="h-3 w-3 mr-1" /> Save</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}><X className="h-3 w-3 mr-1" /> Cancel</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-3">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">{g.title} {!g.is_published && <span className="text-xs text-muted-foreground">(Draft)</span>}</p>
+                        <p className="text-xs text-muted-foreground">{g.category} · /{g.slug} · {g.read_time}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => startEdit(g)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteGuide(g.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {guides.length === 0 && <p className="text-sm text-muted-foreground">No guides yet.</p>}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ============ NEWSLETTER MANAGER ============
+function NewsletterManager() {
+  const { toast } = useToast();
+  const [subs, setSubs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSubs = async () => {
+    const { data } = await supabase.from('newsletter_subscribers').select('*').order('created_at', { ascending: false });
+    setSubs(data || []);
+    setLoading(false);
+  };
+  useEffect(() => { fetchSubs(); }, []);
+
+  const deleteSub = async (id: string) => {
+    await supabase.from('newsletter_subscribers').delete().eq('id', id);
+    toast({ title: 'Subscriber removed' });
+    fetchSubs();
+  };
+
+  const exportCsv = () => {
+    const csv = ['Email,Name,Subscribed At', ...subs.map(s => `${s.email},${s.name || ''},${s.created_at}`)].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'subscribers.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const copyEmails = () => {
+    const emails = subs.filter(s => s.is_active).map(s => s.email).join(', ');
+    navigator.clipboard.writeText(emails);
+    toast({ title: 'Copied!', description: `${subs.filter(s => s.is_active).length} email addresses copied. Paste into your email client's BCC field to send your newsletter.` });
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader><CardTitle className="text-lg">Newsletter Subscribers ({subs.length})</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex gap-2 mb-4 flex-wrap">
+            <Button variant="hero" size="sm" onClick={copyEmails} disabled={subs.length === 0}>
+              <Mail className="h-4 w-4 mr-1" /> Copy All Emails (for BCC)
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportCsv} disabled={subs.length === 0}>
+              <Upload className="h-4 w-4 mr-1 rotate-180" /> Export CSV
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Tip: Use "Copy All Emails" then paste into the BCC field of Gmail/Outlook to send a newsletter. For bulk sending features (templates, scheduling, open tracking), consider Mailchimp or Brevo.
+          </p>
+          {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+            <div className="space-y-2">
+              {subs.map(s => (
+                <div key={s.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm truncate">{s.email}</p>
+                    <p className="text-xs text-muted-foreground">{s.name || '—'} · {new Date(s.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => deleteSub(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              ))}
+              {subs.length === 0 && <p className="text-sm text-muted-foreground">No subscribers yet.</p>}
             </div>
           )}
         </CardContent>
