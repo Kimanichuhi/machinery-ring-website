@@ -131,20 +131,19 @@ const Services = () => {
       <div className="bg-primary py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">
-              Need Custom Agricultural Support?
-            </h2>
-            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-primary-foreground/90 max-w-2xl mx-auto">
-              Our team of agricultural experts is ready to provide personalized solutions 
-              for your specific farming needs.
-            </p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">{cta.title}</h2>
+            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-primary-foreground/90 max-w-2xl mx-auto">{cta.content}</p>
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" variant="secondary">
-                Contact Our Experts
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
-                Request Quote
-              </Button>
+              {cta.metadata?.cta_primary && (
+                <Link to={cta.metadata.cta_primary.href}>
+                  <Button size="lg" variant="secondary">{cta.metadata.cta_primary.label}</Button>
+                </Link>
+              )}
+              {cta.metadata?.cta_secondary && (
+                <Link to={cta.metadata.cta_secondary.href}>
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">{cta.metadata.cta_secondary.label}</Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>

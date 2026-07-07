@@ -3,11 +3,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ImageIcon, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { usePageContent } from '@/hooks/usePageContent';
 
 const Gallery = () => {
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const { get } = usePageContent('gallery');
+  const hero = get('hero', { title: 'Photo Gallery', content: 'Explore our collection of images showcasing farming activities, products, and community events.' });
+  const footer = get('footer', { title: 'More Photos Coming Soon', content: "We're continuously updating our gallery with new images from the field. Check back regularly for updates!" });
 
   useEffect(() => {
     const fetchImages = async () => {
