@@ -3,11 +3,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ImageIcon, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { usePageContent } from '@/hooks/usePageContent';
 
 const Gallery = () => {
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const { get } = usePageContent('gallery');
+  const hero = get('hero', { title: 'Photo Gallery', content: 'Explore our collection of images showcasing farming activities, products, and community events.' });
+  const footer = get('footer', { title: 'More Photos Coming Soon', content: "We're continuously updating our gallery with new images from the field. Check back regularly for updates!" });
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -46,12 +50,8 @@ const Gallery = () => {
       <div className="bg-white border-b">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:px-8">
           <div className="text-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
-              Photo Gallery
-            </h1>
-            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-8 text-muted-foreground max-w-2xl mx-auto px-4">
-              Explore our collection of images showcasing farming activities, products, and community events.
-            </p>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground">{hero.title}</h1>
+            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-8 text-muted-foreground max-w-2xl mx-auto px-4">{hero.content}</p>
           </div>
         </div>
       </div>
@@ -164,13 +164,8 @@ const Gallery = () => {
       <div className="bg-muted/50 py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              More Photos Coming Soon
-            </h2>
-            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
-              We're continuously updating our gallery with new images from the field.
-              Check back regularly for updates!
-            </p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">{footer.title}</h2>
+            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">{footer.content}</p>
           </div>
         </div>
       </div>

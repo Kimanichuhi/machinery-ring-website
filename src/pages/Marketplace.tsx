@@ -107,12 +107,18 @@ const Marketplace = () => {
         <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProducts.map((product) => (
             <Card key={product.id} className="product-card group">
-              <div className="aspect-square overflow-hidden rounded-t-xl bg-muted">
+              <div className="relative aspect-square overflow-hidden rounded-t-xl bg-muted">
                 <img
                   src={product.image_url || '/placeholder.svg'}
                   alt={product.name}
                   className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                 />
+                {product.description && (
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                    <p className="text-white font-semibold text-sm line-clamp-1">{product.name}</p>
+                    <p className="text-white/90 text-xs line-clamp-3 mt-1">{product.description}</p>
+                  </div>
+                )}
               </div>
               <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4">
                 <div className="flex items-start justify-between">

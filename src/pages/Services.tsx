@@ -1,13 +1,27 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Users, Clock, Award, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { usePageContent } from '@/hooks/usePageContent';
+
+const ICONS: Record<string, any> = { CheckCircle, Users, Award };
+
+const FALLBACK_STATS = [
+  { name: 'Certified Experts', value: '50+', icon: 'Users' },
+  { name: 'Services Completed', value: '2,800+', icon: 'Award' },
+  { name: 'Satisfaction Rate', value: '98%', icon: 'CheckCircle' },
+];
 
 const Services = () => {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { get, items } = usePageContent('services');
+  const hero = get('hero', { title: 'Expert Agricultural Services', content: 'Professional farming services from certified experts to help you maximize yields, optimize resources and grow your agricultural business.' });
+  const stats = items('stats', FALLBACK_STATS);
+  const cta = get('cta', { title: 'Need Custom Agricultural Support?', content: 'Our team of agricultural experts is ready to provide personalized solutions for your specific farming needs.', metadata: { cta_primary: { label: 'Contact Our Experts', href: '/contact' }, cta_secondary: { label: 'Request Quote', href: '/contact' } } });
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -24,13 +38,8 @@ const Services = () => {
       <div className="bg-white border-b">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:px-8">
           <div className="text-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
-              Expert Agricultural Services
-            </h1>
-            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground max-w-2xl mx-auto px-4">
-              Professional farming services from certified experts to help you maximize yields, 
-              optimize resources and grow your agricultural business.
-            </p>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground">{hero.title}</h1>
+            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground max-w-2xl mx-auto px-4">{hero.content}</p>
           </div>
         </div>
       </div>
@@ -38,28 +47,17 @@ const Services = () => {
       {/* Stats */}
       <div className="bg-muted/50 py-10 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-3 text-center">
-            <div>
-              <div className="flex justify-center mb-2">
-                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-primary">50+</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Certified Experts</p>
-            </div>
-            <div>
-              <div className="flex justify-center mb-2">
-                <Award className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-primary">2,800+</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Services Completed</p>
-            </div>
-            <div>
-              <div className="flex justify-center mb-2">
-                <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-primary">98%</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Satisfaction Rate</p>
-            </div>
+          <div className={`grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-${Math.min(stats.length, 4)} text-center`}>
+            {stats.map((s: any) => {
+              const Icon = ICONS[s.icon] || Users;
+              return (
+                <div key={s.name}>
+                  <div className="flex justify-center mb-2"><Icon className="h-6 w-6 sm:h-8 sm:w-8 text-primary" /></div>
+                  <p className="text-2xl sm:text-3xl font-bold text-primary">{s.value}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{s.name}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -133,20 +131,19 @@ const Services = () => {
       <div className="bg-primary py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">
-              Need Custom Agricultural Support?
-            </h2>
-            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-primary-foreground/90 max-w-2xl mx-auto">
-              Our team of agricultural experts is ready to provide personalized solutions 
-              for your specific farming needs.
-            </p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">{cta.title}</h2>
+            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-primary-foreground/90 max-w-2xl mx-auto">{cta.content}</p>
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" variant="secondary">
-                Contact Our Experts
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
-                Request Quote
-              </Button>
+              {cta.metadata?.cta_primary && (
+                <Link to={cta.metadata.cta_primary.href}>
+                  <Button size="lg" variant="secondary">{cta.metadata.cta_primary.label}</Button>
+                </Link>
+              )}
+              {cta.metadata?.cta_secondary && (
+                <Link to={cta.metadata.cta_secondary.href}>
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">{cta.metadata.cta_secondary.label}</Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>

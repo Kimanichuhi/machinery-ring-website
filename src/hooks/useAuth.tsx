@@ -17,24 +17,14 @@ export function useAuth() {
   };
 
   useEffect(() => {
-    // Get initial session first
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdmin(session.user.id).then(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // Then listen for changes
+    // Subscribe FIRST so we never miss an event; supabase-js fires an
+    // INITIAL_SESSION event on subscribe, so we don't need a separate
+    // getSession() call (which caused a double render / flicker).
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Use setTimeout to avoid async in callback
           setTimeout(() => {
             checkAdmin(session.user.id).then(() => setLoading(false));
           }, 0);
@@ -44,7 +34,6 @@ export function useAuth() {
         }
       }
     );
-
     return () => subscription.unsubscribe();
   }, []);
 

@@ -153,6 +153,7 @@ export type Database = {
         Row: {
           category: string
           created_at: string
+          description: string | null
           id: string
           image_url: string | null
           is_available: boolean | null
@@ -168,6 +169,7 @@ export type Database = {
         Insert: {
           category: string
           created_at?: string
+          description?: string | null
           id?: string
           image_url?: string | null
           is_available?: boolean | null
@@ -183,6 +185,7 @@ export type Database = {
         Update: {
           category?: string
           created_at?: string
+          description?: string | null
           id?: string
           image_url?: string | null
           is_available?: boolean | null
