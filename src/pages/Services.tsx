@@ -1,13 +1,27 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Users, Clock, Award, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { usePageContent } from '@/hooks/usePageContent';
+
+const ICONS: Record<string, any> = { CheckCircle, Users, Award };
+
+const FALLBACK_STATS = [
+  { name: 'Certified Experts', value: '50+', icon: 'Users' },
+  { name: 'Services Completed', value: '2,800+', icon: 'Award' },
+  { name: 'Satisfaction Rate', value: '98%', icon: 'CheckCircle' },
+];
 
 const Services = () => {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { get, items } = usePageContent('services');
+  const hero = get('hero', { title: 'Expert Agricultural Services', content: 'Professional farming services from certified experts to help you maximize yields, optimize resources and grow your agricultural business.' });
+  const stats = items('stats', FALLBACK_STATS);
+  const cta = get('cta', { title: 'Need Custom Agricultural Support?', content: 'Our team of agricultural experts is ready to provide personalized solutions for your specific farming needs.', metadata: { cta_primary: { label: 'Contact Our Experts', href: '/contact' }, cta_secondary: { label: 'Request Quote', href: '/contact' } } });
 
   useEffect(() => {
     const fetchServices = async () => {
