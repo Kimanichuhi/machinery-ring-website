@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Clock, ChevronRight, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
+import { SEO } from '@/components/SEO';
 
 const seasonalTips = [
   {

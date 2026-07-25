@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Leaf, Users, Award, Target, Heart, Globe } from 'lucide-react';
 import { usePageContent } from '@/hooks/usePageContent';
+import { SEO } from '@/components/SEO';
 
 const ICONS: Record<string, any> = { Leaf, Users, Award, Target, Heart, Globe };
 
@@ -31,6 +32,11 @@ const About = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="About Machinery Ring — Farmer-Owned Agri Services in Nyandarua"
+        description="Machinery Ring is a farmer-owned organization in Nyandarua, Kenya delivering quality inputs, mechanization, training and community programs."
+        path="/about"
+      />
       {/* Hero */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:px-8">

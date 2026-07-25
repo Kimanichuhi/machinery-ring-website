@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, ShoppingCart, MapPin, Star, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { SEO } from '@/components/SEO';
 
 // Hardcoded fallback products
 const fallbackProducts = [
@@ -58,6 +59,11 @@ const Marketplace = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Marketplace — Seeds, Fertilizers & Farm Tools | Machinery Ring"
+        description="Browse quality seeds, fertilizers, tools and fresh produce from verified Kenyan suppliers on the Machinery Ring marketplace."
+        path="/marketplace"
+      />
       <div className="bg-white border-b">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 lg:px-8">
           <div className="text-center">

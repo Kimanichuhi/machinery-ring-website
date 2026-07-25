@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Phone, Mail, Clock, MessageSquare } from 'lucide-react';
+import { SEO } from '@/components/SEO';
 
 const contactInfo = [
   {
@@ -55,6 +56,11 @@ const Contact = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Contact Machinery Ring Nyandarua — Get in Touch"
+        description="Reach Machinery Ring Nyandarua by phone, email or in person. We're here to help farmers across Kenya grow better."
+        path="/contact"
+      />
       {/* Header */}
       <div className="bg-white border-b">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:px-8">

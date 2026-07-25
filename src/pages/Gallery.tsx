@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ImageIcon, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePageContent } from '@/hooks/usePageContent';
+import { SEO } from '@/components/SEO';
 
 const Gallery = () => {
   const [images, setImages] = useState<any[]>([]);
@@ -47,6 +48,11 @@ const Gallery = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Photo Gallery — Farming Activities & Community | Machinery Ring"
+        description="Photos from Machinery Ring field days, trainings, mechanization work and community events across Nyandarua, Kenya."
+        path="/gallery"
+      />
       <div className="bg-white border-b">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:px-8">
           <div className="text-center">
