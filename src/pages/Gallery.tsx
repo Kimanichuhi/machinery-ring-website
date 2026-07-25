@@ -113,6 +113,7 @@ const Gallery = () => {
               {/* Close button */}
               <button
                 onClick={() => setSelectedIndex(null)}
+                aria-label="Close image viewer"
                 className="absolute top-3 right-3 z-10 rounded-full bg-background/80 p-2 text-foreground hover:bg-background transition-colors"
               >
                 <X className="h-5 w-5" />
@@ -122,6 +123,7 @@ const Gallery = () => {
               {selectedIndex! > 0 && (
                 <button
                   onClick={goPrev}
+                  aria-label="Previous image"
                   className="absolute left-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 p-2 text-foreground hover:bg-background transition-colors"
                 >
                   <ChevronLeft className="h-6 w-6" />
@@ -130,6 +132,7 @@ const Gallery = () => {
               {selectedIndex! < images.length - 1 && (
                 <button
                   onClick={goNext}
+                  aria-label="Next image"
                   className="absolute right-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 p-2 text-foreground hover:bg-background transition-colors"
                 >
                   <ChevronRight className="h-6 w-6" />
