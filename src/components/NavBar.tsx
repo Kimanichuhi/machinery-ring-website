@@ -39,7 +39,7 @@ export function NavBar() {
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/mrlogo.png" alt="Logo" className="h-10 w-auto object-contain" />
+          <img src="/mrlogo.png" alt="Machinery Ring Logo" className="h-10 w-auto object-contain" />
           <span className="font-semibold text-lg">Machinery Ring</span>
         </Link>
 
@@ -58,7 +58,7 @@ export function NavBar() {
         </div>
 
         <div className="hidden lg:flex lg:items-center lg:space-x-3">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" aria-label="Shopping cart">
             <ShoppingCart className="h-4 w-4" />
           </Button>
         </div>
@@ -69,6 +69,8 @@ export function NavBar() {
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
