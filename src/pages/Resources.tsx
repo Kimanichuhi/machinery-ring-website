@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Clock, ChevronRight, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
+import { SEO } from '@/components/SEO';
 
 const seasonalTips = [
   {
@@ -63,6 +64,20 @@ const Resources = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Farmer Resources — Guides, Seasonal Tips & FAQs | Machinery Ring"
+        description="Practical farming guides, seasonal tips, and answers to common questions for smallholder and commercial farmers in Kenya."
+        path="/resources"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: faqs.map(f => ({
+            '@type': 'Question',
+            name: f.question,
+            acceptedAnswer: { '@type': 'Answer', text: f.answer },
+          })),
+        }}
+      />
       <div className="bg-white border-b">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:px-8">
           <div className="text-center">

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Users, Clock, Award, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePageContent } from '@/hooks/usePageContent';
+import { SEO } from '@/components/SEO';
 
 const ICONS: Record<string, any> = { CheckCircle, Users, Award };
 
@@ -34,6 +35,11 @@ const Services = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Agricultural Services — Consultancy, Soil Testing & Mechanization"
+        description="Professional farm services from certified experts: consultancy, soil testing, irrigation and mechanization across Nyandarua and Kenya."
+        path="/services"
+      />
       {/* Header */}
       <div className="bg-white border-b">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:px-8">
@@ -64,6 +70,7 @@ const Services = () => {
 
       {/* Services Grid */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:px-8">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground text-center mb-8 sm:mb-12">Our Agricultural Services</h2>
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
         ) : (

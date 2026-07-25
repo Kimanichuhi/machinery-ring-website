@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Leaf, Users, TrendingUp, Award, ShoppingCart, Wrench, BookOpen, CheckCircle, Globe, Target, Heart } from 'lucide-react';
 import { PromoPosters } from '@/components/PromoPosters';
 import { usePageContent } from '@/hooks/usePageContent';
+import { SEO } from '@/components/SEO';
 import heroImage from '@/assets/herobg.jpg';
 import productsImage from '@/assets/productDisplay.jpg';
 
@@ -90,6 +91,11 @@ const Index = () => {
 
   return (
     <div className="bg-background">
+      <SEO
+        title="Machinery Ring Nyandarua — Farm Inputs & Services in Kenya"
+        description="Quality farm inputs, expert agri-services, and a farmer community across Nyandarua and Kenya. Better yields with Machinery Ring."
+        path="/"
+      />
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">

@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ImageIcon, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePageContent } from '@/hooks/usePageContent';
+import { SEO } from '@/components/SEO';
 
 const Gallery = () => {
   const [images, setImages] = useState<any[]>([]);
@@ -47,6 +48,11 @@ const Gallery = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Photo Gallery — Farming Activities & Community | Machinery Ring"
+        description="Photos from Machinery Ring field days, trainings, mechanization work and community events across Nyandarua, Kenya."
+        path="/gallery"
+      />
       <div className="bg-white border-b">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:px-8">
           <div className="text-center">
@@ -113,6 +119,7 @@ const Gallery = () => {
               {/* Close button */}
               <button
                 onClick={() => setSelectedIndex(null)}
+                aria-label="Close image viewer"
                 className="absolute top-3 right-3 z-10 rounded-full bg-background/80 p-2 text-foreground hover:bg-background transition-colors"
               >
                 <X className="h-5 w-5" />
@@ -122,6 +129,7 @@ const Gallery = () => {
               {selectedIndex! > 0 && (
                 <button
                   onClick={goPrev}
+                  aria-label="Previous image"
                   className="absolute left-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 p-2 text-foreground hover:bg-background transition-colors"
                 >
                   <ChevronLeft className="h-6 w-6" />
@@ -130,6 +138,7 @@ const Gallery = () => {
               {selectedIndex! < images.length - 1 && (
                 <button
                   onClick={goNext}
+                  aria-label="Next image"
                   className="absolute right-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 p-2 text-foreground hover:bg-background transition-colors"
                 >
                   <ChevronRight className="h-6 w-6" />

@@ -1,0 +1,13 @@
+# Machinery Ring Nyandarua
+
+> Farmer-owned service organization in Nyandarua, Kenya providing quality farm inputs, mechanization and agri-services, training, and a marketplace connecting farmers across the region.
+
+## Pages
+
+- [Home](/): Overview of Machinery Ring, featured products, and services.
+- [Marketplace](/marketplace): Browse seeds, fertilizers, tools, and produce from verified suppliers.
+- [Services](/services): Professional agricultural services including consultancy, soil testing, and mechanization.
+- [Resources](/resources): Farming guides, seasonal tips, and frequently asked questions.
+- [Gallery](/gallery): Photos of farming activities, training events, and community programs.
+- [About](/about): Mission, vision, values, and team behind Machinery Ring.
+- [Contact](/contact): Get in touch with the Machinery Ring team.
