@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Clock, Loader2 } from 'lucide-react';
+import { SEO } from '@/components/SEO';
 
 const GuideDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -56,6 +57,24 @@ const GuideDetail = () => {
 
   return (
     <article className="bg-background min-h-screen">
+      <SEO
+        title={`${guide.title} — Machinery Ring Guide`}
+        description={guide.description || `${guide.title} — a practical farming guide from Machinery Ring Nyandarua.`}
+        path={`/guides/${guide.slug}`}
+        ogType="article"
+        image={guide.image_url || undefined}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: guide.title,
+          description: guide.description || undefined,
+          image: guide.image_url || undefined,
+          author: { '@type': 'Organization', name: 'Machinery Ring Nyandarua' },
+          publisher: { '@type': 'Organization', name: 'Machinery Ring Nyandarua', logo: { '@type': 'ImageObject', url: 'https://machringalliance.lovable.app/mrlogo.png' } },
+          datePublished: guide.created_at,
+          dateModified: guide.updated_at,
+        }}
+      />
       <div className="bg-white border-b">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-14 lg:px-8">
           <Link to="/resources" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4">
