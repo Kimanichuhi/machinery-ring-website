@@ -18,7 +18,7 @@ const FALLBACK_STATS = [
 
 const About = () => {
   const { get, items } = usePageContent('about');
-  const hero = get('hero', { title: 'About Machinery Ring', content: '', metadata: { image: '/mrlogo.png' } });
+  const hero = get('hero', { title: 'About Machinery Ring', content: 'Machinery Ring Nyandarua is a farmer-owned service organization empowering smallholders across Kenya with quality inputs, affordable mechanization, expert training, and access to reliable markets. We work alongside farmers to raise yields, protect soils, and build sustainable rural livelihoods.', metadata: { image: '/mrlogo.png' } });
   const stats = items('stats', FALLBACK_STATS);
   const mission = get('mission', { title: 'Our Mission', content: '' });
   const vision = get('vision', { title: 'Our Vision', content: '' });
