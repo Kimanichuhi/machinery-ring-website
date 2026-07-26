@@ -5,12 +5,18 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  envFile: false,
   server: {
     host: "::",
     port: 8080,
     watch: {
-      ignored: ["**/.env", "**/.env.*"],
+      ignored: (file: string) => /(^|[/\\])\.env(\..*)?$/.test(file),
     },
+  },
+  define: {
+    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(process.env.VITE_SUPABASE_URL),
+    "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(process.env.VITE_SUPABASE_PUBLISHABLE_KEY),
+    "import.meta.env.VITE_SUPABASE_PROJECT_ID": JSON.stringify(process.env.VITE_SUPABASE_PROJECT_ID),
   },
   plugins: [
     react(),
