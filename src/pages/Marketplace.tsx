@@ -7,6 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, ShoppingCart, MapPin, Star, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
+import { useCart } from '@/hooks/useCart';
+import { toast } from 'sonner';
+
 
 // Hardcoded fallback products
 const fallbackProducts = [
@@ -38,6 +41,12 @@ const Marketplace = () => {
   const [sortBy, setSortBy] = useState('featured');
   const [products, setProducts] = useState<any[]>(fallbackProducts);
   const [loading, setLoading] = useState(true);
+  const { add } = useCart();
+  const handleAdd = (p: any) => {
+    add({ id: p.id, name: p.name, price: Number(p.price || 0), unit: p.unit, image_url: p.image_url });
+    toast.success(`Added ${p.name} to cart`);
+  };
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -155,9 +164,10 @@ const Marketplace = () => {
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs sm:text-sm text-muted-foreground">{product.stock} in stock</span>
-                  <Button size="sm" variant="hero" className="text-xs sm:text-sm">
+                  <Button size="sm" variant="hero" className="text-xs sm:text-sm" onClick={() => handleAdd(product)}>
                     <ShoppingCart className="h-3 w-3 mr-1" /> Add to Cart
                   </Button>
+
                 </div>
               </CardContent>
             </Card>
