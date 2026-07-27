@@ -120,13 +120,14 @@ const Services = () => {
                     </div>
                   )}
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <Button className="flex-1" variant="hero">
-                      Book Service
-                    </Button>
-                    <Button variant="outline" className="flex-1">
-                      Learn More
-                    </Button>
+                    <Link to={`/book/${service.id}`} className="flex-1">
+                      <Button className="w-full" variant="hero">Book Service</Button>
+                    </Link>
+                    <Link to={`/services/${service.id}`} className="flex-1">
+                      <Button variant="outline" className="w-full">Learn More</Button>
+                    </Link>
                   </div>
+
                 </CardContent>
               </Card>
             ))}

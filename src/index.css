@@ -186,6 +186,11 @@
   .animate-scale-in {
     animation: scaleIn 0.5s ease-out;
   }
+
+  .animate-page-in {
+    animation: pageIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
 }
 
 @keyframes fadeIn {
@@ -219,4 +224,9 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
