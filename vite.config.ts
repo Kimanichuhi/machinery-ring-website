@@ -3,9 +3,14 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
+const emptyEnvDir = path.resolve(__dirname, ".vite-empty-env");
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  envFile: false,
+  // The preview environment rewrites the project-root .env while it is running.
+  // Vite watches envDir files outside `server.watch.ignored`, so point envDir at
+  // an inert folder and inject the public runtime values explicitly below.
+  envDir: emptyEnvDir,
   server: {
     host: "::",
     port: 8080,
