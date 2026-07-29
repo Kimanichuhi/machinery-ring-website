@@ -34,7 +34,7 @@ async function tryLoadLogo(): Promise<string | null> {
   } catch { return null; }
 }
 
-export async function generateInvoicePDF(order: InvoiceOrder) {
+async function buildInvoiceDocument(order: InvoiceOrder) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -134,5 +134,21 @@ export async function generateInvoicePDF(order: InvoiceOrder) {
   doc.text("Thank you for choosing Machinery Ring — Smart Farming, Better Yields.",
     pageWidth / 2, doc.internal.pageSize.getHeight() - 30, { align: "center" });
 
+  return doc;
+}
+
+export async function downloadInvoicePDF(order: InvoiceOrder) {
+  const doc = await buildInvoiceDocument(order);
   doc.save(`invoice-${order.order_number}.pdf`);
+}
+
+export async function createInvoicePreviewUrl(order: InvoiceOrder) {
+  const doc = await buildInvoiceDocument(order);
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+  return { url, revoke: () => URL.revokeObjectURL(url) };
+}
+
+export async function generateInvoicePDF(order: InvoiceOrder) {
+  await downloadInvoicePDF(order);
 }

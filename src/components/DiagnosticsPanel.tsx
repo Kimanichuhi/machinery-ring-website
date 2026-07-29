@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Bug, X } from "lucide-react";
+import { getDiagnosticsSnapshot, recordDiagnosticsEntry, setLastReloadReason, subscribeDiagnostics } from "@/lib/diagnostics";
 
 interface Entry { type: string; message: string; at: string; stack?: string; componentStack?: string }
 
@@ -12,7 +13,14 @@ export function DiagnosticsPanel() {
 
   useEffect(() => {
     if (!dev) return;
-    const add = (e: Entry) => setEntries((prev) => [e, ...prev].slice(0, 30));
+    setEntries(getDiagnosticsSnapshot().entries);
+    const unsubscribe = subscribeDiagnostics(() => setEntries(getDiagnosticsSnapshot().entries));
+    const nav = performance.getEntriesByType("navigation")[0]?.toJSON?.()?.type;
+    if (nav === "reload") setLastReloadReason("Browser page reload");
+    const add = (e: Entry) => {
+      recordDiagnosticsEntry(e);
+      setEntries((prev) => [e, ...prev].slice(0, 30));
+    };
 
     const onErr = (ev: ErrorEvent) => add({ type: "error", message: ev.message, at: new Date().toISOString(), stack: ev.error?.stack });
     const onRej = (ev: PromiseRejectionEvent) => add({ type: "rejection", message: String(ev.reason?.message || ev.reason), at: new Date().toISOString() });
@@ -25,16 +33,17 @@ export function DiagnosticsPanel() {
     // Hook Vite HMR
     const hot = (import.meta as any).hot;
     if (hot) {
-      hot.on("vite:beforeUpdate", () => { setHmr("updating"); add({ type: "hmr", message: "beforeUpdate", at: new Date().toISOString() }); });
+      hot.on("vite:beforeUpdate", () => { setHmr("updating"); setLastReloadReason("Vite hot update"); add({ type: "hmr", message: "beforeUpdate", at: new Date().toISOString() }); });
       hot.on("vite:afterUpdate", () => setHmr("idle"));
-      hot.on("vite:beforeFullReload", (p: any) => { setHmr("reloading"); add({ type: "hmr", message: `full reload: ${p?.path || "unknown"}`, at: new Date().toISOString() }); });
-      hot.on("vite:error", (p: any) => add({ type: "hmr-error", message: p?.err?.message || "hmr error", at: new Date().toISOString() }));
+      hot.on("vite:beforeFullReload", (p: any) => { setHmr("reloading"); setLastReloadReason(`Vite full reload: ${p?.path || "unknown"}`); add({ type: "hmr", message: `full reload: ${p?.path || "unknown"}`, at: new Date().toISOString() }); });
+      hot.on("vite:error", (p: any) => { setLastReloadReason("Vite error"); add({ type: "hmr-error", message: p?.err?.message || "hmr error", at: new Date().toISOString() }); });
     }
 
     return () => {
       window.removeEventListener("error", onErr);
       window.removeEventListener("unhandledrejection", onRej);
       window.removeEventListener("mr-diagnostics", onCustom);
+      unsubscribe();
     };
   }, [dev]);
 

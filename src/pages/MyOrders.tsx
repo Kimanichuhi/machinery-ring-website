@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Download, Package } from "lucide-react";
-import { generateInvoicePDF } from "@/lib/invoice";
+import { type InvoiceOrder } from "@/lib/invoice";
+import { InvoicePreviewDialog } from "@/components/InvoicePreviewDialog";
 import { SEO } from "@/components/SEO";
 
 const MyOrders = () => {
@@ -14,6 +15,8 @@ const MyOrders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<any[]>([]);
   const [busy, setBusy] = useState(true);
+  const [invoiceOrder, setInvoiceOrder] = useState<InvoiceOrder | null>(null);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -28,14 +31,15 @@ const MyOrders = () => {
     })();
   }, [user, loading, navigate]);
 
-  const downloadInvoice = async (o: any) => {
-    await generateInvoicePDF({
+  const previewInvoice = (o: any) => {
+    setInvoiceOrder({
       order_number: o.order_number, created_at: o.created_at, status: o.status,
       customer_name: o.customer_name, customer_email: o.customer_email, customer_phone: o.customer_phone,
       delivery_address: o.delivery_address, notes: o.notes,
       subtotal: Number(o.subtotal), delivery_fee: Number(o.delivery_fee), total: Number(o.total),
       items: (o.order_items || []).map((i: any) => ({ product_name: i.product_name, unit_price: Number(i.unit_price), quantity: i.quantity, subtotal: Number(i.subtotal) })),
     });
+    setInvoiceOpen(true);
   };
 
   if (loading || busy) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -43,6 +47,7 @@ const MyOrders = () => {
   return (
     <div className="bg-background min-h-screen">
       <SEO title="My Orders · Machinery Ring" description="Track your orders and download invoices." path="/orders" />
+      <InvoicePreviewDialog open={invoiceOpen} order={invoiceOrder} onOpenChange={setInvoiceOpen} />
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <h1 className="text-2xl sm:text-3xl font-bold mb-6">My Orders</h1>
         {orders.length === 0 ? (
@@ -73,7 +78,7 @@ const MyOrders = () => {
                   </ul>
                   <div className="border-t pt-2 flex items-center justify-between">
                     <span className="font-bold text-primary">Total: KES {Number(o.total).toLocaleString()}</span>
-                    <Button size="sm" variant="outline" onClick={() => downloadInvoice(o)}>
+                    <Button size="sm" variant="outline" onClick={() => previewInvoice(o)}>
                       <Download className="h-3 w-3 mr-1" /> Invoice
                     </Button>
                   </div>

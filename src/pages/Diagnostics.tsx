@@ -4,6 +4,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Download } from "lucide-react";
+import { downloadDiagnosticsReport, getDiagnosticsSnapshot, subscribeDiagnostics } from "@/lib/diagnostics";
 
 /**
  * Minimal isolation page to diagnose preview reloads / render issues.
@@ -14,13 +16,21 @@ export default function Diagnostics() {
   const [fetching, setFetching] = useState(false);
   const [heavy, setHeavy] = useState(false);
   const [tick, setTick] = useState(0);
+  const [snapshot, setSnapshot] = useState(getDiagnosticsSnapshot());
+
+  React.useEffect(() => subscribeDiagnostics(() => setSnapshot(getDiagnosticsSnapshot())), []);
+
+  const toggles = { animations, dataFetching: fetching, nonEssentialComponents: heavy, tick };
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6">
       <div className="mx-auto max-w-2xl space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-bold">Diagnostics</h1>
-          <Link to="/"><Button variant="outline" size="sm">Home</Button></Link>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => downloadDiagnosticsReport(toggles)}><Download className="mr-1 h-3 w-3" /> Export</Button>
+            <Link to="/"><Button variant="outline" size="sm">Home</Button></Link>
+          </div>
         </div>
 
         <Card>
@@ -40,6 +50,21 @@ export default function Diagnostics() {
             <div>Origin: {typeof window !== "undefined" ? window.location.origin : "n/a"}</div>
             <div>Mode: {import.meta.env.MODE}</div>
             <div>Supabase URL set: {String(!!import.meta.env.VITE_SUPABASE_URL)}</div>
+            <div>Last reload: {snapshot.lastReloadReason}</div>
+            <div>Captured errors: {snapshot.entries.filter((entry) => entry.type.includes("error") || entry.type === "rejection").length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base">Recent events</CardTitle></CardHeader>
+          <CardContent className="space-y-2 text-xs">
+            {snapshot.entries.length === 0 && <p className="text-muted-foreground">No events captured.</p>}
+            {snapshot.entries.slice(0, 5).map((entry, index) => (
+              <div key={`${entry.at}-${index}`} className="rounded border p-2">
+                <div className="font-medium">{entry.type} · {new Date(entry.at).toLocaleTimeString()}</div>
+                <div className="text-muted-foreground break-words">{entry.message}</div>
+              </div>
+            ))}
           </CardContent>
         </Card>
 

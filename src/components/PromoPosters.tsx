@@ -14,6 +14,7 @@ interface Poster {
   link_label: string;
   start_date: string;
   end_date: string;
+  is_active: boolean;
 }
 
 export const PromoPosters: React.FC = () => {
@@ -30,7 +31,12 @@ export const PromoPosters: React.FC = () => {
         .lte('start_date', now)
         .gte('end_date', now)
         .order('sort_order');
-      setPosters(data || []);
+      setPosters((data || []).filter((poster) => {
+        const start = new Date(poster.start_date).getTime();
+        const end = new Date(poster.end_date).getTime();
+        const current = Date.now();
+        return poster.is_active && start <= current && end >= current;
+      }));
       setLoading(false);
     };
     fetchPosters();
