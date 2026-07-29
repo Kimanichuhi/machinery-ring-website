@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Trash2, Plus, LogOut, Upload, Image as ImageIcon, Package, FileText, Wrench, Loader2, Pencil, Save, X, Megaphone, BookOpen, Mail, Calendar } from 'lucide-react';
+import { Trash2, Plus, LogOut, Upload, Image as ImageIcon, Package, FileText, Wrench, Loader2, Pencil, Save, X, Megaphone, BookOpen, Mail, Calendar, LayoutDashboard, ShoppingCart, MessageSquare, Download } from 'lucide-react';
+import { generateInvoicePDF } from '@/lib/invoice';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
@@ -44,17 +45,25 @@ const Admin = () => {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-6">
-        <Tabs defaultValue="products">
+        <Tabs defaultValue="overview">
           <TabsList className="mb-6 flex-wrap h-auto">
+            <TabsTrigger value="overview"><LayoutDashboard className="h-4 w-4 mr-1" /> Overview</TabsTrigger>
+            <TabsTrigger value="orders"><ShoppingCart className="h-4 w-4 mr-1" /> Orders</TabsTrigger>
+            <TabsTrigger value="messages"><MessageSquare className="h-4 w-4 mr-1" /> Messages</TabsTrigger>
+            <TabsTrigger value="bookings"><Calendar className="h-4 w-4 mr-1" /> Bookings</TabsTrigger>
             <TabsTrigger value="products"><Package className="h-4 w-4 mr-1" /> Products</TabsTrigger>
             <TabsTrigger value="services"><Wrench className="h-4 w-4 mr-1" /> Services</TabsTrigger>
             <TabsTrigger value="gallery"><ImageIcon className="h-4 w-4 mr-1" /> Gallery</TabsTrigger>
-            <TabsTrigger value="posters"><Megaphone className="h-4 w-4 mr-1" /> Posters</TabsTrigger>
+            <TabsTrigger value="posters"><Megaphone className="h-4 w-4 mr-1" /> Ads</TabsTrigger>
             <TabsTrigger value="guides"><BookOpen className="h-4 w-4 mr-1" /> Guides</TabsTrigger>
             <TabsTrigger value="newsletter"><Mail className="h-4 w-4 mr-1" /> Newsletter</TabsTrigger>
             <TabsTrigger value="content"><FileText className="h-4 w-4 mr-1" /> Page Content</TabsTrigger>
           </TabsList>
 
+          <TabsContent value="overview"><OverviewPanel /></TabsContent>
+          <TabsContent value="orders"><OrdersManager /></TabsContent>
+          <TabsContent value="messages"><MessagesManager /></TabsContent>
+          <TabsContent value="bookings"><BookingsManager /></TabsContent>
           <TabsContent value="products"><ProductsManager /></TabsContent>
           <TabsContent value="services"><ServicesManager /></TabsContent>
           <TabsContent value="gallery"><GalleryManager /></TabsContent>
@@ -1049,6 +1058,200 @@ function NewsletterManager() {
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// ============ OVERVIEW ============
+function OverviewPanel() {
+  const [stats, setStats] = useState({ orders: 0, revenue: 0, messages: 0, bookings: 0, products: 0, subscribers: 0 });
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      const [o, m, b, p, s] = await Promise.all([
+        supabase.from('orders').select('total', { count: 'exact' }),
+        supabase.from('contact_messages').select('id', { count: 'exact', head: true }),
+        supabase.from('bookings').select('id', { count: 'exact', head: true }),
+        supabase.from('products').select('id', { count: 'exact', head: true }),
+        supabase.from('newsletter_subscribers').select('id', { count: 'exact', head: true }),
+      ]);
+      const revenue = (o.data || []).reduce((s: number, r: any) => s + Number(r.total || 0), 0);
+      setStats({
+        orders: o.count || 0, revenue,
+        messages: m.count || 0, bookings: b.count || 0,
+        products: p.count || 0, subscribers: s.count || 0,
+      });
+      setLoading(false);
+    })();
+  }, []);
+  if (loading) return <div className="py-10 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  const tiles = [
+    { label: 'Orders', value: stats.orders },
+    { label: 'Revenue (KES)', value: stats.revenue.toLocaleString() },
+    { label: 'Messages', value: stats.messages },
+    { label: 'Bookings', value: stats.bookings },
+    { label: 'Products', value: stats.products },
+    { label: 'Subscribers', value: stats.subscribers },
+  ];
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {tiles.map((t) => (
+        <Card key={t.label}><CardContent className="p-5">
+          <p className="text-sm text-muted-foreground">{t.label}</p>
+          <p className="text-2xl font-bold text-primary mt-1">{t.value}</p>
+        </CardContent></Card>
+      ))}
+    </div>
+  );
+}
+
+// ============ ORDERS ============
+function OrdersManager() {
+  const { toast } = useToast();
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await supabase.from('orders').select('*, order_items(*)').order('created_at', { ascending: false });
+    setOrders(data || []);
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  const setStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from('orders').update({ status }).eq('id', id);
+    if (error) return toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    toast({ title: 'Updated' });
+    load();
+  };
+
+  const del = async (id: string) => {
+    if (!confirm('Delete this order?')) return;
+    await supabase.from('order_items').delete().eq('order_id', id);
+    await supabase.from('orders').delete().eq('id', id);
+    load();
+  };
+
+  if (loading) return <div className="py-10 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  if (!orders.length) return <p className="text-muted-foreground">No orders yet.</p>;
+
+  return (
+    <div className="space-y-3">
+      {orders.map((o) => (
+        <Card key={o.id}><CardContent className="p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold">#{o.order_number} · <span className="text-primary">KES {Number(o.total).toLocaleString()}</span></p>
+              <p className="text-sm text-muted-foreground">{o.customer_name} · {o.customer_email} · {o.customer_phone}</p>
+              <p className="text-xs text-muted-foreground mt-1">{new Date(o.created_at).toLocaleString()}</p>
+              {o.delivery_address && <p className="text-xs mt-1">📍 {o.delivery_address}</p>}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <select value={o.status} onChange={(e) => setStatus(o.id, e.target.value)} className="border rounded px-2 py-1 text-sm bg-background">
+                {['pending','confirmed','processing','delivered','cancelled'].map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <Button size="sm" variant="outline" onClick={() => generateInvoicePDF({
+                order_number: o.order_number, created_at: o.created_at, status: o.status,
+                customer_name: o.customer_name, customer_email: o.customer_email, customer_phone: o.customer_phone,
+                delivery_address: o.delivery_address, notes: o.notes,
+                subtotal: Number(o.subtotal), delivery_fee: Number(o.delivery_fee), total: Number(o.total),
+                items: (o.order_items || []).map((i: any) => ({ product_name: i.product_name, unit_price: Number(i.unit_price), quantity: i.quantity, subtotal: Number(i.subtotal) })),
+              })}><Download className="h-3 w-3 mr-1" /> Invoice</Button>
+              <Button size="sm" variant="ghost" onClick={() => del(o.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            </div>
+          </div>
+          {o.order_items?.length ? (
+            <div className="mt-3 border-t pt-2 text-sm space-y-1">
+              {o.order_items.map((i: any) => (
+                <div key={i.id} className="flex justify-between">
+                  <span>{i.product_name} × {i.quantity}</span>
+                  <span>KES {Number(i.subtotal).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </CardContent></Card>
+      ))}
+    </div>
+  );
+}
+
+// ============ MESSAGES ============
+function MessagesManager() {
+  const [msgs, setMsgs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const load = async () => {
+    setLoading(true);
+    const { data } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
+    setMsgs(data || []); setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+  const toggle = async (id: string, status: string) => {
+    await supabase.from('contact_messages').update({ status: status === 'read' ? 'new' : 'read' }).eq('id', id);
+    load();
+  };
+  const del = async (id: string) => { if (!confirm('Delete?')) return; await supabase.from('contact_messages').delete().eq('id', id); load(); };
+  if (loading) return <div className="py-10 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  if (!msgs.length) return <p className="text-muted-foreground">No messages.</p>;
+  return (
+    <div className="space-y-3">
+      {msgs.map((m) => (
+        <Card key={m.id} className={m.status === 'new' ? 'border-primary/50' : ''}><CardContent className="p-4">
+          <div className="flex justify-between gap-3 flex-wrap">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold">{m.name} <span className="text-xs text-muted-foreground">· {m.email}</span></p>
+              {m.subject && <p className="text-sm font-medium mt-1">{m.subject}</p>}
+              <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{m.message}</p>
+              <p className="text-xs text-muted-foreground mt-2">{new Date(m.created_at).toLocaleString()}{m.phone ? ` · ${m.phone}` : ''}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => toggle(m.id, m.status)}>{m.status === 'read' ? 'Mark new' : 'Mark read'}</Button>
+              <Button size="sm" variant="ghost" onClick={() => del(m.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            </div>
+          </div>
+        </CardContent></Card>
+      ))}
+    </div>
+  );
+}
+
+// ============ BOOKINGS ============
+function BookingsManager() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const load = async () => {
+    setLoading(true);
+    const { data } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
+    setRows(data || []); setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+  const setStatus = async (id: string, status: string) => { await supabase.from('bookings').update({ status }).eq('id', id); load(); };
+  const del = async (id: string) => { if (!confirm('Delete?')) return; await supabase.from('bookings').delete().eq('id', id); load(); };
+  if (loading) return <div className="py-10 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  if (!rows.length) return <p className="text-muted-foreground">No bookings.</p>;
+  return (
+    <div className="space-y-3">
+      {rows.map((b) => (
+        <Card key={b.id}><CardContent className="p-4">
+          <div className="flex justify-between gap-3 flex-wrap">
+            <div>
+              <p className="font-semibold">{b.full_name} <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary ml-1">{b.booking_type}</span></p>
+              <p className="text-sm text-muted-foreground">{b.service_name || '—'} · {b.email} · {b.phone}</p>
+              {b.preferred_date && <p className="text-xs mt-1">📅 {b.preferred_date}</p>}
+              {b.location && <p className="text-xs">📍 {b.location}</p>}
+              {b.message && <p className="text-sm mt-2 whitespace-pre-wrap">{b.message}</p>}
+              <p className="text-xs text-muted-foreground mt-2">{new Date(b.created_at).toLocaleString()}</p>
+            </div>
+            <div className="flex gap-2 items-start">
+              <select value={b.status} onChange={(e) => setStatus(b.id, e.target.value)} className="border rounded px-2 py-1 text-sm bg-background">
+                {['new','contacted','confirmed','completed','cancelled'].map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <Button size="sm" variant="ghost" onClick={() => del(b.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            </div>
+          </div>
+        </CardContent></Card>
+      ))}
     </div>
   );
 }
