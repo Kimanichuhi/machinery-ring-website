@@ -24,6 +24,7 @@ export function InvoicePreviewDialog({ open, order, onOpenChange }: InvoicePrevi
     }
 
     setLoading(true);
+    setPreviewUrl(null);
     createInvoicePreviewUrl(order).then(({ url, revoke }) => {
       if (!active) {
         revoke();

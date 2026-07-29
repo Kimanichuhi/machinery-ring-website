@@ -846,7 +846,7 @@ function PostersManager() {
                         </div>
                         <div className="flex gap-1 flex-shrink-0">
                           <Button variant="ghost" size="sm" onClick={() => startEdit(p)}><Pencil className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="sm" onClick={() => archivePoster(p.id, !p.is_active)}>{p.is_active ? 'Archive' : 'Restore'}</Button>
+                          <Button variant="ghost" size="sm" onClick={() => archivePoster(p.id, p.is_active)}>{p.is_active ? 'Archive' : 'Restore'}</Button>
                           <Button variant="ghost" size="sm" onClick={() => deletePoster(p)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </div>
                       </div>
