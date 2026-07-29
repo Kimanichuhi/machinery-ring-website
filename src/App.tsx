@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from "@/hooks/useCart";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { DiagnosticsPanel } from "@/components/DiagnosticsPanel";
 import { Loader2 } from "lucide-react";
 
 const Index = lazy(() => import("./pages/Index"));
@@ -80,6 +81,7 @@ const App: React.FC = () => (
             <ScrollToTop />
             <Sonner />
             <Toaster />
+            <DiagnosticsPanel />
             <Suspense fallback={<RouteFallback />}>
               <Routes>
                 <Route path="/admin/login" element={<AdminLogin />} />
