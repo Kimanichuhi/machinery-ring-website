@@ -46,7 +46,7 @@ const PublicShell: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
-      <main key={location.pathname} className="flex-1 animate-page-in">
+      <main className="flex-1 animate-page-in">
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Index />} />
