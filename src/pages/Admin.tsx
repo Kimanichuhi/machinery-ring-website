@@ -85,7 +85,6 @@ function ProductsManager() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
@@ -649,6 +648,7 @@ function PostersManager() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const today = new Date().toISOString().slice(0, 10);
@@ -673,7 +673,7 @@ function PostersManager() {
   };
 
   const validatePoster = (values: { title: string; link_url: string; start_date: string; end_date: string }, needsImage: boolean) => {
-    if (!form.title || !imageFile) {
+    if (!values.title.trim() || (needsImage && !imageFile)) {
       toast({ title: 'Title and image required', variant: 'destructive' });
       return false;
     }
@@ -691,6 +691,7 @@ function PostersManager() {
 
   const addPoster = async () => {
     if (!validatePoster(form, true)) return;
+    if (!imageFile) return;
     setUploading(true);
     const imageUrl = await uploadImage(imageFile);
     if (!imageUrl) { setUploading(false); return; }
