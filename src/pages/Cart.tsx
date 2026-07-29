@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Minus, Plus, ShoppingBag, Loader2, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { generateInvoicePDF } from "@/lib/invoice";
+import { type InvoiceOrder } from "@/lib/invoice";
+import { InvoicePreviewDialog } from "@/components/InvoicePreviewDialog";
 import { SEO } from "@/components/SEO";
 
 const DELIVERY_FEE = 200;
@@ -20,6 +21,8 @@ const Cart = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
+  const [invoiceOrder, setInvoiceOrder] = useState<InvoiceOrder | null>(null);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [form, setForm] = useState({
     name: user?.user_metadata?.full_name || "",
     email: user?.email || "",
@@ -64,7 +67,7 @@ const Cart = () => {
       const { error: itemsError } = await supabase.from("order_items").insert(rows);
       if (itemsError) throw itemsError;
 
-      await generateInvoicePDF({
+      const nextInvoice: InvoiceOrder = {
         order_number: order.order_number,
         created_at: order.created_at,
         status: order.status,
@@ -77,11 +80,12 @@ const Cart = () => {
         delivery_fee: Number(order.delivery_fee),
         total: Number(order.total),
         items: rows.map((r) => ({ product_name: r.product_name, unit_price: r.unit_price, quantity: r.quantity, subtotal: r.subtotal })),
-      });
+      };
 
-      toast.success(`Order ${order.order_number} placed. Invoice downloaded.`);
+      setInvoiceOrder(nextInvoice);
+      setInvoiceOpen(true);
+      toast.success(`Order ${order.order_number} placed. Preview your invoice to download.`);
       clear();
-      navigate("/orders");
     } catch (err: any) {
       toast.error(err.message || "Failed to place order");
     } finally {
@@ -94,6 +98,14 @@ const Cart = () => {
   return (
     <div className="bg-background min-h-screen">
       <SEO title="Your Cart · Machinery Ring" description="Review your cart and place your order." path="/cart" />
+      <InvoicePreviewDialog
+        open={invoiceOpen}
+        order={invoiceOrder}
+        onOpenChange={(open) => {
+          setInvoiceOpen(open);
+          if (!open && invoiceOrder) navigate("/orders");
+        }}
+      />
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <h1 className="text-2xl sm:text-3xl font-bold mb-6">Your Cart</h1>
 

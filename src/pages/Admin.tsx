@@ -11,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Trash2, Plus, LogOut, Upload, Image as ImageIcon, Package, FileText, Wrench, Loader2, Pencil, Save, X, Megaphone, BookOpen, Mail, Calendar, LayoutDashboard, ShoppingCart, MessageSquare, Download } from 'lucide-react';
-import { generateInvoicePDF } from '@/lib/invoice';
+import { type InvoiceOrder } from '@/lib/invoice';
+import { InvoicePreviewDialog } from '@/components/InvoicePreviewDialog';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
@@ -84,6 +85,7 @@ function ProductsManager() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
@@ -670,11 +672,25 @@ function PostersManager() {
     return publicUrl;
   };
 
-  const addPoster = async () => {
+  const validatePoster = (values: { title: string; link_url: string; start_date: string; end_date: string }, needsImage: boolean) => {
     if (!form.title || !imageFile) {
       toast({ title: 'Title and image required', variant: 'destructive' });
-      return;
+      return false;
     }
+    if (!values.start_date || !values.end_date || new Date(values.start_date) > new Date(values.end_date)) {
+      toast({ title: 'Timeline dates are invalid', description: 'End date must be on or after the start date.', variant: 'destructive' });
+      return false;
+    }
+    if (values.link_url && !values.link_url.startsWith('/') && !values.link_url.startsWith('http')) {
+      toast({ title: 'Link URL is invalid', description: 'Use a site path like /services or a full https:// link.', variant: 'destructive' });
+      return false;
+    }
+    if (needsImage && !imageFile) return false;
+    return true;
+  };
+
+  const addPoster = async () => {
+    if (!validatePoster(form, true)) return;
     setUploading(true);
     const imageUrl = await uploadImage(imageFile);
     if (!imageUrl) { setUploading(false); return; }
@@ -690,7 +706,7 @@ function PostersManager() {
     else {
       toast({ title: 'Poster added' });
       setForm({ title: '', description: '', link_url: '', link_label: 'Learn More', start_date: today, end_date: nextWeek, sort_order: '0' });
-      setImageFile(null);
+      setImageFile(null); setImagePreview('');
       fetchPosters();
     }
   };
@@ -708,6 +724,7 @@ function PostersManager() {
 
   const saveEdit = async () => {
     if (!editingId) return;
+    if (!validatePoster(editForm, false)) return;
     let imageUrl: string | undefined;
     if (editImageFile) {
       const url = await uploadImage(editImageFile);
@@ -725,6 +742,12 @@ function PostersManager() {
     const { error } = await supabase.from('promo_posters').update(updateData).eq('id', editingId);
     if (error) toast({ title: 'Error', description: error.message, variant: 'destructive' });
     else { toast({ title: 'Poster updated' }); setEditingId(null); setEditImageFile(null); fetchPosters(); }
+  };
+
+  const archivePoster = async (id: string, archived: boolean) => {
+    const { error } = await supabase.from('promo_posters').update({ is_active: !archived }).eq('id', id);
+    if (error) toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    else { toast({ title: archived ? 'Poster restored' : 'Poster archived' }); fetchPosters(); }
   };
 
   const deletePoster = async (p: any) => {
@@ -752,7 +775,18 @@ function PostersManager() {
             <div><Label>Sort Order</Label><Input type="number" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: e.target.value }))} /></div>
             <div className="sm:col-span-2">
               <Label>Poster Image *</Label>
-              <Input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] || null)} />
+              <Input type="file" accept="image/*" onChange={e => { const file = e.target.files?.[0] || null; setImageFile(file); setImagePreview(file ? URL.createObjectURL(file) : ''); }} />
+            </div>
+          </div>
+          <div className="mt-4 rounded-lg border bg-muted/30 p-3">
+            <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Homepage timeline preview</p>
+            <div className="flex gap-3">
+              <div className="h-16 w-20 rounded bg-muted overflow-hidden flex-shrink-0">{imagePreview && <img src={imagePreview} alt="Poster preview" className="h-full w-full object-cover" />}</div>
+              <div className="min-w-0 text-sm">
+                <p className="font-medium truncate">{form.title || 'Poster title'}</p>
+                <p className="text-xs text-muted-foreground truncate">{form.description || 'Description preview'}</p>
+                <p className="mt-1 text-xs text-primary">{form.start_date} – {form.end_date}</p>
+              </div>
             </div>
           </div>
           <Button variant="hero" className="mt-4" onClick={addPoster} disabled={uploading}>
@@ -811,6 +845,7 @@ function PostersManager() {
                         </div>
                         <div className="flex gap-1 flex-shrink-0">
                           <Button variant="ghost" size="sm" onClick={() => startEdit(p)}><Pencil className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="sm" onClick={() => archivePoster(p.id, !p.is_active)}>{p.is_active ? 'Archive' : 'Restore'}</Button>
                           <Button variant="ghost" size="sm" onClick={() => deletePoster(p)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </div>
                       </div>
@@ -1110,6 +1145,8 @@ function OrdersManager() {
   const { toast } = useToast();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [invoiceOrder, setInvoiceOrder] = useState<InvoiceOrder | null>(null);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -1133,11 +1170,23 @@ function OrdersManager() {
     load();
   };
 
+  const previewInvoice = (o: any) => {
+    setInvoiceOrder({
+      order_number: o.order_number, created_at: o.created_at, status: o.status,
+      customer_name: o.customer_name, customer_email: o.customer_email, customer_phone: o.customer_phone,
+      delivery_address: o.delivery_address, notes: o.notes,
+      subtotal: Number(o.subtotal), delivery_fee: Number(o.delivery_fee), total: Number(o.total),
+      items: (o.order_items || []).map((i: any) => ({ product_name: i.product_name, unit_price: Number(i.unit_price), quantity: i.quantity, subtotal: Number(i.subtotal) })),
+    });
+    setInvoiceOpen(true);
+  };
+
   if (loading) return <div className="py-10 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (!orders.length) return <p className="text-muted-foreground">No orders yet.</p>;
 
   return (
     <div className="space-y-3">
+      <InvoicePreviewDialog open={invoiceOpen} order={invoiceOrder} onOpenChange={setInvoiceOpen} />
       {orders.map((o) => (
         <Card key={o.id}><CardContent className="p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1151,13 +1200,7 @@ function OrdersManager() {
               <select value={o.status} onChange={(e) => setStatus(o.id, e.target.value)} className="border rounded px-2 py-1 text-sm bg-background">
                 {['pending','confirmed','processing','delivered','cancelled'].map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-              <Button size="sm" variant="outline" onClick={() => generateInvoicePDF({
-                order_number: o.order_number, created_at: o.created_at, status: o.status,
-                customer_name: o.customer_name, customer_email: o.customer_email, customer_phone: o.customer_phone,
-                delivery_address: o.delivery_address, notes: o.notes,
-                subtotal: Number(o.subtotal), delivery_fee: Number(o.delivery_fee), total: Number(o.total),
-                items: (o.order_items || []).map((i: any) => ({ product_name: i.product_name, unit_price: Number(i.unit_price), quantity: i.quantity, subtotal: Number(i.subtotal) })),
-              })}><Download className="h-3 w-3 mr-1" /> Invoice</Button>
+              <Button size="sm" variant="outline" onClick={() => previewInvoice(o)}><Download className="h-3 w-3 mr-1" /> Invoice</Button>
               <Button size="sm" variant="ghost" onClick={() => del(o.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
             </div>
           </div>
