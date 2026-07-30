@@ -466,6 +466,131 @@ export type Database = {
         }
         Relationships: []
       }
+      resources: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          file_url: string | null
+          id: string
+          is_available: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          is_available?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          is_available?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      security_findings: {
+        Row: {
+          created_at: string
+          description: string | null
+          fix_notes: string | null
+          fixed_at: string | null
+          id: string
+          internal_id: string
+          scan_id: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          fix_notes?: string | null
+          fixed_at?: string | null
+          id?: string
+          internal_id: string
+          scan_id?: string | null
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          fix_notes?: string | null
+          fixed_at?: string | null
+          id?: string
+          internal_id?: string
+          scan_id?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_findings_scan_id_fkey"
+            columns: ["scan_id"]
+            isOneToOne: false
+            referencedRelation: "security_scans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_scans: {
+        Row: {
+          created_at: string
+          fixed_count: number
+          id: string
+          ignored_count: number
+          notes: string | null
+          open_count: number
+          scanned_at: string
+          source: string
+          total_findings: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fixed_count?: number
+          id?: string
+          ignored_count?: number
+          notes?: string | null
+          open_count?: number
+          scanned_at?: string
+          source?: string
+          total_findings?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fixed_count?: number
+          id?: string
+          ignored_count?: number
+          notes?: string | null
+          open_count?: number
+          scanned_at?: string
+          source?: string
+          total_findings?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           bookings: string | null
@@ -507,6 +632,78 @@ export type Database = {
           price?: string | null
           rating?: number | null
           sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_stats: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          is_visible: boolean
+          label: string
+          sort_order: number
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_visible?: boolean
+          label: string
+          sort_order?: number
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_visible?: boolean
+          label?: string
+          sort_order?: number
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          bio: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_visible: boolean
+          name: string
+          photo_url: string | null
+          role: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_visible?: boolean
+          name: string
+          photo_url?: string | null
+          role?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_visible?: boolean
+          name?: string
+          photo_url?: string | null
+          role?: string | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
