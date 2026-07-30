@@ -9,13 +9,19 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AdminSidebar, type AdminSection } from '@/components/admin/AdminSidebar';
+import { TeamManager, StatsManager, ResourcesManager } from '@/components/admin/DynamicManagers';
+import { SecurityPanel } from '@/components/admin/SecurityPanel';
 import { useToast } from '@/hooks/use-toast';
 import { Trash2, Plus, LogOut, Upload, Image as ImageIcon, Package, FileText, Wrench, Loader2, Pencil, Save, X, Megaphone, BookOpen, Mail, Calendar, LayoutDashboard, ShoppingCart, MessageSquare, Download } from 'lucide-react';
 import { type InvoiceOrder } from '@/lib/invoice';
 import { InvoicePreviewDialog } from '@/components/InvoicePreviewDialog';
 
 const Admin = () => {
+  const [section, setSection] = useState<AdminSection>('overview');
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+
   const navigate = useNavigate();
 
   useEffect(() => {
