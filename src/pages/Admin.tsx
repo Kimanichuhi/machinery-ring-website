@@ -35,48 +35,45 @@ const Admin = () => {
   if (!user || !isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="border-b bg-background">
-        <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold">Admin Dashboard</h1>
-          <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/'); }}>
-            <LogOut className="h-4 w-4 mr-2" /> Sign Out
-          </Button>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-muted/30">
+        <AdminSidebar section={section} onSelect={setSection} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="sticky top-0 z-30 border-b bg-background">
+            <div className="px-4 py-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <SidebarTrigger />
+                <h1 className="text-lg font-bold truncate capitalize">{section === 'content' ? 'Page Content' : section}</h1>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/'); }}>
+                <LogOut className="h-4 w-4 mr-2" /> Sign Out
+              </Button>
+            </div>
+          </header>
+
+          <main className="flex-1 p-4 sm:p-6 overflow-x-hidden">
+            {section === 'overview' && <OverviewPanel />}
+            {section === 'orders' && <OrdersManager />}
+            {section === 'messages' && <MessagesManager />}
+            {section === 'bookings' && <BookingsManager />}
+            {section === 'products' && <ProductsManager />}
+            {section === 'services' && <ServicesManager />}
+            {section === 'gallery' && <GalleryManager />}
+            {section === 'posters' && <PostersManager />}
+            {section === 'guides' && <GuidesManager />}
+            {section === 'resources' && <ResourcesManager />}
+            {section === 'newsletter' && <NewsletterManager />}
+            {section === 'content' && <ContentManager />}
+            {section === 'team' && <TeamManager />}
+            {section === 'stats' && <StatsManager />}
+            {section === 'security' && <SecurityPanel />}
+          </main>
         </div>
       </div>
-
-      <div className="mx-auto max-w-7xl px-4 py-6">
-        <Tabs defaultValue="overview">
-          <TabsList className="mb-6 flex-wrap h-auto">
-            <TabsTrigger value="overview"><LayoutDashboard className="h-4 w-4 mr-1" /> Overview</TabsTrigger>
-            <TabsTrigger value="orders"><ShoppingCart className="h-4 w-4 mr-1" /> Orders</TabsTrigger>
-            <TabsTrigger value="messages"><MessageSquare className="h-4 w-4 mr-1" /> Messages</TabsTrigger>
-            <TabsTrigger value="bookings"><Calendar className="h-4 w-4 mr-1" /> Bookings</TabsTrigger>
-            <TabsTrigger value="products"><Package className="h-4 w-4 mr-1" /> Products</TabsTrigger>
-            <TabsTrigger value="services"><Wrench className="h-4 w-4 mr-1" /> Services</TabsTrigger>
-            <TabsTrigger value="gallery"><ImageIcon className="h-4 w-4 mr-1" /> Gallery</TabsTrigger>
-            <TabsTrigger value="posters"><Megaphone className="h-4 w-4 mr-1" /> Ads</TabsTrigger>
-            <TabsTrigger value="guides"><BookOpen className="h-4 w-4 mr-1" /> Guides</TabsTrigger>
-            <TabsTrigger value="newsletter"><Mail className="h-4 w-4 mr-1" /> Newsletter</TabsTrigger>
-            <TabsTrigger value="content"><FileText className="h-4 w-4 mr-1" /> Page Content</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview"><OverviewPanel /></TabsContent>
-          <TabsContent value="orders"><OrdersManager /></TabsContent>
-          <TabsContent value="messages"><MessagesManager /></TabsContent>
-          <TabsContent value="bookings"><BookingsManager /></TabsContent>
-          <TabsContent value="products"><ProductsManager /></TabsContent>
-          <TabsContent value="services"><ServicesManager /></TabsContent>
-          <TabsContent value="gallery"><GalleryManager /></TabsContent>
-          <TabsContent value="posters"><PostersManager /></TabsContent>
-          <TabsContent value="guides"><GuidesManager /></TabsContent>
-          <TabsContent value="newsletter"><NewsletterManager /></TabsContent>
-          <TabsContent value="content"><ContentManager /></TabsContent>
-        </Tabs>
-      </div>
-    </div>
+    </SidebarProvider>
   );
 };
+
 
 // ============ PRODUCTS MANAGER ============
 function ProductsManager() {
