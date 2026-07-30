@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Public read access to images bucket" ON storage.objects;
