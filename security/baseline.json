@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-07-30T00:00:00.000Z",
+  "findings": [
+    { "internal_id": "SUPA_anon_security_definer_function_executable", "title": "Security definer function executable by anon", "severity": "high", "status": "fixed" },
+    { "internal_id": "SUPA_authenticated_security_definer_function_executable", "title": "Security definer function executable by authenticated", "severity": "high", "status": "fixed" },
+    { "internal_id": "SUPA_auth_leaked_password_protection", "title": "Leaked password protection disabled", "severity": "medium", "status": "fixed" },
+    { "internal_id": "SUPA_public_bucket_allows_listing", "title": "Public bucket allows listing", "severity": "medium", "status": "fixed" },
+    { "internal_id": "SUPA_rls_policy_always_true", "title": "RLS policy always true", "severity": "high", "status": "fixed" },
+    { "internal_id": "user_roles_self_assign_any_role", "title": "Users could self-assign roles", "severity": "critical", "status": "fixed" },
+    { "internal_id": "images_bucket_public_no_select_policy", "title": "Images bucket public without select policy", "severity": "low", "status": "fixed" },
+    { "internal_id": "profiles_missing_delete_policy", "title": "Profiles missing delete policy", "severity": "low", "status": "fixed" }
+  ]
+}
