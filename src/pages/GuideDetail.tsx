@@ -70,7 +70,7 @@ const GuideDetail = () => {
           description: guide.description || undefined,
           image: guide.image_url || undefined,
           author: { '@type': 'Organization', name: 'Machinery Ring Nyandarua' },
-          publisher: { '@type': 'Organization', name: 'Machinery Ring Nyandarua', logo: { '@type': 'ImageObject', url: 'https://machringalliance.lovable.app/mrlogo.png' } },
+          publisher: { '@type': 'Organization', name: 'Machinery Ring Nyandarua', logo: { '@type': 'ImageObject', url: 'https://mrnyandarua.co.ke/mrlogo.png' } },
           datePublished: guide.created_at,
           dateModified: guide.updated_at,
         }}

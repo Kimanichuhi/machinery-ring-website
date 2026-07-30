@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://machringalliance.lovable.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://machringalliance.lovable.app/marketplace</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://machringalliance.lovable.app/services</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://machringalliance.lovable.app/gallery</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://machringalliance.lovable.app/resources</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://machringalliance.lovable.app/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://machringalliance.lovable.app/contact</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://mrnyandarua.co.ke/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://mrnyandarua.co.ke/marketplace</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://mrnyandarua.co.ke/services</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://mrnyandarua.co.ke/gallery</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mrnyandarua.co.ke/resources</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mrnyandarua.co.ke/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://mrnyandarua.co.ke/contact</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
 </urlset>

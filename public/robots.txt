@@ -15,4 +15,4 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/
 
-Sitemap: https://machringalliance.lovable.app/sitemap.xml
+Sitemap: https://mrnyandarua.co.ke/sitemap.xml
