@@ -26,7 +26,7 @@ const Admin = () => {
 
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
-      navigate('/admin/login');
+      navigate('/auth?redirect=/admin');
     }
   }, [user, isAdmin, authLoading, navigate]);
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,13 +14,15 @@ import { SEO } from "@/components/SEO";
 const Auth = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const redirect = params.get("redirect") || "/";
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", fullName: "", phone: "" });
 
-  useEffect(() => { if (!loading && user) navigate(redirect, { replace: true }); }, [user, loading, redirect, navigate]);
+  useEffect(() => {
+    if (!loading && user) navigate(isAdmin ? "/admin" : redirect, { replace: true });
+  }, [user, isAdmin, loading, redirect, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault(); setBusy(true);
@@ -28,7 +30,6 @@ const Auth = () => {
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Signed in");
-    navigate(redirect, { replace: true });
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -68,6 +69,12 @@ const Auth = () => {
                 <Button type="submit" variant="hero" className="w-full" disabled={busy}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  Don&apos;t have an account?{" "}
+                  <button type="button" onClick={() => setTab("signup")} className="text-primary hover:underline">
+                    Create one
+                  </button>
+                </p>
               </form>
             </TabsContent>
 
@@ -80,13 +87,15 @@ const Auth = () => {
                 <Button type="submit" variant="hero" className="w-full" disabled={busy}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Account"}
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  Already have an account?{" "}
+                  <button type="button" onClick={() => setTab("signin")} className="text-primary hover:underline">
+                    Sign in
+                  </button>
+                </p>
               </form>
             </TabsContent>
           </Tabs>
-
-          <p className="text-xs text-muted-foreground text-center mt-4">
-            Are you an admin? <Link to="/admin/login" className="text-primary hover:underline">Admin login</Link>
-          </p>
         </CardContent>
       </Card>
     </div>

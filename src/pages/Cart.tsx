@@ -64,22 +64,32 @@ const Cart = () => {
         quantity: i.quantity,
         subtotal: i.price * i.quantity,
       }));
-      const { error: itemsError } = await supabase.from("order_items").insert(rows);
+      const { data: insertedItems, error: itemsError } = await supabase.from("order_items").insert(rows).select();
       if (itemsError) throw itemsError;
 
+      // Prices are enforced server-side (trigger recomputes unit_price/subtotal
+      // from the live product price and rolls the order's subtotal/total up from
+      // that), so re-fetch the order to show the customer what was actually billed.
+      const { data: finalOrder, error: refetchError } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("id", order.id)
+        .single();
+      if (refetchError) throw refetchError;
+
       const nextInvoice: InvoiceOrder = {
-        order_number: order.order_number,
-        created_at: order.created_at,
-        status: order.status,
-        customer_name: order.customer_name,
-        customer_email: order.customer_email,
-        customer_phone: order.customer_phone,
-        delivery_address: order.delivery_address,
-        notes: order.notes,
-        subtotal: Number(order.subtotal),
-        delivery_fee: Number(order.delivery_fee),
-        total: Number(order.total),
-        items: rows.map((r) => ({ product_name: r.product_name, unit_price: r.unit_price, quantity: r.quantity, subtotal: r.subtotal })),
+        order_number: finalOrder.order_number,
+        created_at: finalOrder.created_at,
+        status: finalOrder.status,
+        customer_name: finalOrder.customer_name,
+        customer_email: finalOrder.customer_email,
+        customer_phone: finalOrder.customer_phone,
+        delivery_address: finalOrder.delivery_address,
+        notes: finalOrder.notes,
+        subtotal: Number(finalOrder.subtotal),
+        delivery_fee: Number(finalOrder.delivery_fee),
+        total: Number(finalOrder.total),
+        items: (insertedItems || []).map((r) => ({ product_name: r.product_name, unit_price: Number(r.unit_price), quantity: r.quantity, subtotal: Number(r.subtotal) })),
       };
 
       setInvoiceOrder(nextInvoice);

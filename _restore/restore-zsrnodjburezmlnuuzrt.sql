@@ -548,6 +548,60 @@ CREATE TRIGGER update_security_findings_updated_at BEFORE UPDATE ON public.secur
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION private.handle_new_user();
 
+-- ---------- Order pricing integrity (server-side price enforcement) ----------
+-- The cart is client-side (localStorage) and Cart.tsx used to send
+-- unit_price/subtotal/total straight from client state. RLS only checked
+-- auth.uid() = user_id, never the price, so any authenticated customer
+-- could tamper their cart and check out real products at an arbitrary
+-- price. These triggers recompute pricing server-side and ignore
+-- client-submitted numeric values.
+CREATE OR REPLACE FUNCTION public.zero_new_order_totals()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.subtotal := 0;
+  NEW.total := 0;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS zero_new_order_totals ON public.orders;
+CREATE TRIGGER zero_new_order_totals BEFORE INSERT ON public.orders FOR EACH ROW EXECUTE FUNCTION public.zero_new_order_totals();
+
+ALTER TABLE public.orders DROP CONSTRAINT IF EXISTS delivery_fee_non_negative;
+ALTER TABLE public.orders ADD CONSTRAINT delivery_fee_non_negative CHECK (delivery_fee >= 0);
+
+CREATE OR REPLACE FUNCTION public.enforce_order_item_price()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  current_price numeric;
+BEGIN
+  IF NEW.product_id IS NULL THEN
+    RAISE EXCEPTION 'order_items.product_id is required';
+  END IF;
+  SELECT price INTO current_price FROM public.products WHERE id = NEW.product_id;
+  IF current_price IS NULL THEN
+    RAISE EXCEPTION 'Unknown product %', NEW.product_id;
+  END IF;
+  NEW.unit_price := current_price;
+  NEW.subtotal := current_price * NEW.quantity;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS enforce_order_item_price ON public.order_items;
+CREATE TRIGGER enforce_order_item_price BEFORE INSERT ON public.order_items FOR EACH ROW EXECUTE FUNCTION public.enforce_order_item_price();
+
+CREATE OR REPLACE FUNCTION public.recompute_order_totals()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  new_subtotal numeric;
+BEGIN
+  SELECT COALESCE(SUM(subtotal), 0) INTO new_subtotal FROM public.order_items WHERE order_id = NEW.order_id;
+  UPDATE public.orders SET subtotal = new_subtotal, total = new_subtotal + delivery_fee WHERE id = NEW.order_id;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS recompute_order_totals ON public.order_items;
+CREATE TRIGGER recompute_order_totals AFTER INSERT ON public.order_items FOR EACH ROW EXECUTE FUNCTION public.recompute_order_totals();
+
 -- ---------- Storage bucket for images ----------
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('images', 'images', true)

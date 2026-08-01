@@ -26,7 +26,6 @@ const Cart = lazy(() => import("./pages/Cart"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
 const Auth = lazy(() => import("./pages/Auth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Diagnostics = lazy(() => import("./pages/Diagnostics"));
 
@@ -84,7 +83,6 @@ const App: React.FC = () => (
             <DiagnosticsPanel />
             <Suspense fallback={<RouteFallback />}>
               <Routes>
-                <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/diagnostics" element={<Diagnostics />} />
                 <Route path="*" element={<PublicShell />} />
