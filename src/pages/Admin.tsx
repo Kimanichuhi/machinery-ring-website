@@ -13,6 +13,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AdminSidebar, type AdminSection } from '@/components/admin/AdminSidebar';
 import { TeamManager, StatsManager, ResourcesManager } from '@/components/admin/DynamicManagers';
 import { SecurityPanel } from '@/components/admin/SecurityPanel';
+import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
 import { useToast } from '@/hooks/use-toast';
 import { Trash2, Plus, LogOut, Upload, Image as ImageIcon, Package, FileText, Wrench, Loader2, Pencil, Save, X, Megaphone, BookOpen, Mail, Calendar, LayoutDashboard, ShoppingCart, MessageSquare, Download } from 'lucide-react';
 import { type InvoiceOrder } from '@/lib/invoice';
@@ -42,6 +43,7 @@ const Admin = () => {
 
   return (
     <SidebarProvider>
+      <DiagnosticsPanel />
       <div className="min-h-screen flex w-full bg-muted/30">
         <AdminSidebar section={section} onSelect={setSection} />
         <div className="flex-1 flex flex-col min-w-0">

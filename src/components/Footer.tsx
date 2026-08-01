@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Leaf, Mail, Phone, MapPin, Facebook, Twitter, Instagram } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram } from 'lucide-react';
 
 const navigation = {
   main: [
@@ -41,9 +41,7 @@ export function Footer() {
           {/* Company info */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-hero">
-                <Leaf className="h-6 w-6 text-white" />
-              </div>
+              <img src="/mrlogo.png" alt="Machinery Ring" className="h-10 w-10 rounded-lg object-contain" />
               <span className="text-2xl font-bold text-primary">Machinery Ring - Nyandarua</span>
             </Link>
             <p className="text-sm leading-6 text-muted-foreground max-w-md">
